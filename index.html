@@ -4,13 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Party Music Awards 2026</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -20,35 +16,29 @@
       color: #f3f4f6;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    
     .glass-card {
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.15);
     }
-
     .glass-input {
       background: rgba(15, 12, 29, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
     }
-
-    .glass-input:focus {
+    select option { background-color: #1a1528; color: #ffffff; }
+    
+    /* Custom Checkbox Style */
+    .custom-checkbox:checked + label {
+      background: rgba(217, 70, 239, 0.2);
       border-color: #d946ef;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.3);
-    }
-
-    select option {
-      background-color: #1a1528;
       color: #ffffff;
     }
   </style>
 </head>
 <body class="p-4 flex flex-col items-center justify-center min-h-screen">
 
-  <!-- HEADER -->
   <header class="w-full max-w-md flex justify-between items-center mb-4 px-1">
     <div class="flex items-center space-x-2">
       <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-fuchsia-600 to-amber-400 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
@@ -62,17 +52,16 @@
         <i class="fa-solid fa-qrcode text-fuchsia-400"></i>
         <span>Share QR</span>
       </button>
-      <button onclick="confirmResetGame()" title="Reset Game for Everyone" class="px-2.5 py-1.5 rounded-full glass-card hover:bg-red-500/20 text-xs text-slate-400 hover:text-red-300 transition flex items-center gap-1">
+      <button id="admin-reset-btn" onclick="confirmResetGame()" title="Reset Game for Everyone" class="px-2.5 py-1.5 rounded-full glass-card hover:bg-red-500/20 text-xs text-slate-400 hover:text-red-300 transition flex items-center gap-1 hidden">
         <i class="fa-solid fa-rotate-right"></i>
         <span>Reset</span>
       </button>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
   <main class="w-full max-w-md">
 
-    <!-- STEP 1: SELECT IDENTITY SCREEN -->
+    <!-- STEP 1: IDENTITY -->
     <section id="step-identity" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300">
       <div class="text-center mb-6">
         <div class="inline-flex p-3 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/20 mb-3 text-fuchsia-400 text-2xl">
@@ -108,7 +97,7 @@
       </div>
     </section>
 
-    <!-- STEP 2: VOTING FORM SCREEN -->
+    <!-- STEP 2: VOTING FORM -->
     <section id="step-vote" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
       <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
         <div>
@@ -116,12 +105,12 @@
           <h2 id="vote-greeting" class="text-xl font-bold text-white">Hello, Player!</h2>
         </div>
         <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 flex items-center gap-1">
-          <i class="fa-solid fa-shield-halved text-[10px]"></i> Self-vote locked
+          <i class="fa-solid fa-check-double text-[10px]"></i> Pick EXACTLY 2 options
         </span>
       </div>
 
-      <form id="voting-questions-container" class="space-y-5" onsubmit="event.preventDefault();">
-        <!-- Questions rendered dynamically -->
+      <form id="voting-questions-container" class="space-y-6" onsubmit="event.preventDefault();">
+        <!-- Dynamic Questions with Checkboxes -->
       </form>
 
       <div class="mt-6 pt-5 border-t border-white/10">
@@ -132,8 +121,10 @@
       </div>
     </section>
 
-    <!-- STEP 3: WAITING ROOM / LIVE RESULTS SCREEN -->
+    <!-- STEP 3: STATUS / RESULTS -->
     <section id="step-status" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
+      
+      <!-- WAITING STATE -->
       <div id="status-waiting" class="text-center py-4">
         <div class="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
           <div class="absolute inset-0 rounded-full border-4 border-fuchsia-500/20 border-t-fuchsia-500 animate-spin"></div>
@@ -141,7 +132,7 @@
         </div>
 
         <h2 class="text-2xl font-black text-white">Ballot Submitted!</h2>
-        <p class="text-sm text-slate-400 mt-1 max-w-xs mx-auto">Results will unlock once all 9 contestants finish voting.</p>
+        <p class="text-sm text-slate-400 mt-1 max-w-xs mx-auto">Waiting for all 9 contestants to complete voting...</p>
 
         <div class="mt-6 bg-slate-900/60 rounded-xl p-4 border border-white/10">
           <div class="flex justify-between items-center text-xs font-semibold mb-2">
@@ -154,17 +145,28 @@
         </div>
       </div>
 
+      <!-- RESTRICTED RESULTS STATE (FOR NON-TRINH PLAYERS) -->
+      <div id="status-restricted" class="hidden text-center py-6 space-y-3">
+        <div class="inline-flex p-4 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/30 text-fuchsia-400 text-3xl">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h2 class="text-2xl font-black text-white">Voting Complete!</h2>
+        <p class="text-sm text-slate-300 max-w-xs mx-auto">All votes have been tallied. The final results are strictly revealed to <strong class="text-amber-300">Trinh</strong>!</p>
+      </div>
+
+      <!-- UNLOCKED RESULTS STATE (ONLY FOR TRINH) -->
       <div id="status-results" class="hidden">
         <div class="text-center mb-6">
           <div class="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/30 mb-2 text-amber-400 text-3xl">
             <i class="fa-solid fa-trophy"></i>
           </div>
-          <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-orange-300">Final Results!</h2>
-          <p class="text-xs text-slate-400 mt-1">All 9 players have voted. Here are the winners!</p>
+          <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-orange-300">Final Winner Board!</h2>
+          <p class="text-xs text-slate-400 mt-1">Hello Trinh, here are the official results!</p>
         </div>
 
         <div id="results-display-container" class="space-y-6"></div>
       </div>
+
     </section>
 
   </main>
@@ -188,10 +190,9 @@
   </div>
 
   <script>
-    // ĐÃ CẬP NHẬT URL MỚI CỦA BẠN
     const API_URL = "https://script.google.com/macros/s/AKfycbzXLzCATb-D9tO_LH-8bJV4o1OS1RTk7CGxjX1wE-nqVXi7YJVZ2aWiqqLQadEteiHKlA/exec";
-    
     const TOTAL_PLAYERS = 9;
+    const ADMIN_USER = "Trinh";
     const PLAYERS = ["Denny", "Trixie", "Jasmine", "Stephen", "Bella", "Dien", "Trinh", "Doan", "Hebe"];
 
     let QUESTIONS = [];
@@ -245,12 +246,20 @@
         updateHeaderProgress(votedUsersList.length);
         populateIdentityDropdown();
 
+        // Reveal Reset button ONLY for Trinh
+        if (currentVoter === ADMIN_USER) {
+          document.getElementById("admin-reset-btn").classList.remove("hidden");
+        } else {
+          document.getElementById("admin-reset-btn").classList.add("hidden");
+        }
+
         if (votedUsersList.length >= TOTAL_PLAYERS) {
           fetchAndShowResults();
         } else if (currentVoter && votedUsersList.includes(currentVoter)) {
           showScreen("step-status");
           document.getElementById("status-waiting").classList.remove("hidden");
           document.getElementById("status-results").classList.add("hidden");
+          document.getElementById("status-restricted").classList.add("hidden");
           updateWaitingProgress(votedUsersList.length);
         } else if (!currentVoter) {
           showScreen("step-identity");
@@ -301,7 +310,7 @@
 
       QUESTIONS.forEach((q, index) => {
         const qCard = document.createElement("div");
-        qCard.className = "bg-white/5 p-4 rounded-xl border border-white/10 space-y-2";
+        qCard.className = "bg-white/5 p-4 rounded-xl border border-white/10 space-y-3";
 
         qCard.innerHTML = `
           <div class="flex items-start gap-2.5 mb-1">
@@ -310,39 +319,46 @@
             </div>
             <div>
               <h3 class="text-sm font-bold text-white">${index + 1}. ${q.title}</h3>
-              <p class="text-[11px] text-slate-400">${q.description}</p>
+              <p class="text-[11px] text-fuchsia-300 italic">Select EXACTLY 2 options below:</p>
             </div>
           </div>
         `;
 
-        const selectWrapper = document.createElement("div");
-        selectWrapper.className = "relative mt-2";
+        const optionsContainer = document.createElement("div");
+        optionsContainer.className = "space-y-2 pt-1";
 
-        const select = document.createElement("select");
-        select.id = `input-${q.id}`;
-        select.className = "glass-input w-full px-3.5 py-3 rounded-lg appearance-none pr-10 text-sm";
-        select.add(new Option("-- Select your choice --", ""));
-
+        let availableChoices = [];
         if (q.type === "solo") {
-          PLAYERS.filter(name => name !== currentVoter).forEach(cand => {
-            select.add(new Option(cand, cand));
-          });
+          availableChoices = PLAYERS.filter(name => name !== currentVoter).map(name => ({ label: name }));
         } else if (q.type === "custom") {
-          q.parsedOptions
-            .filter(opt => !opt.members.includes(currentVoter))
-            .forEach(opt => {
-              select.add(new Option(opt.label, opt.label));
-            });
+          availableChoices = q.parsedOptions.filter(opt => !opt.members.includes(currentVoter));
         }
 
-        const arrow = document.createElement("i");
-        arrow.className = "fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs";
+        availableChoices.forEach((choice, optIdx) => {
+          const checkId = `check-${q.id}-${optIdx}`;
+          const choiceDiv = document.createElement("div");
+          choiceDiv.innerHTML = `
+            <input type="checkbox" id="${checkId}" name="${q.id}" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit('${q.id}')">
+            <label for="${checkId}" class="flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition">
+              <span>${choice.label}</span>
+              <i class="fa-solid fa-check text-xs opacity-0 transition-opacity"></i>
+            </label>
+          `;
+          optionsContainer.appendChild(choiceDiv);
+        });
 
-        selectWrapper.appendChild(select);
-        selectWrapper.appendChild(arrow);
-        qCard.appendChild(selectWrapper);
+        qCard.appendChild(optionsContainer);
         container.appendChild(qCard);
       });
+    }
+
+    // Khóa chỉ cho chọn tối đa đúng 2 tùy chọn
+    function handleCheckboxLimit(questionId) {
+      const checkedBoxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+      if (checkedBoxes.length > 2) {
+        alert("You can only select a maximum of 2 choices for this question!");
+        event.target.checked = false;
+      }
     }
 
     async function handleSubmitVote() {
@@ -350,15 +366,12 @@
       let isComplete = true;
 
       QUESTIONS.forEach(q => {
-        const input = document.getElementById(`input-${q.id}`);
-        if (!input || !input.value) {
+        const checked = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`)).map(cb => cb.value);
+        if (checked.length !== 2) {
           isComplete = false;
-          if (input) {
-            input.classList.add("ring-2", "ring-rose-500");
-            setTimeout(() => input.classList.remove("ring-2", "ring-rose-500"), 1200);
-          }
+          alert(`Please select EXACTLY 2 options for question: "${q.title}"`);
         } else {
-          answers[q.id] = input.value;
+          answers[q.id] = checked;
         }
       });
 
@@ -393,15 +406,19 @@
     async function fetchAndShowResults() {
       showScreen("step-status");
       document.getElementById("status-waiting").classList.add("hidden");
-      document.getElementById("status-results").classList.remove("hidden");
 
       try {
-        const res = await fetch(API_URL + "?action=getResults");
+        const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}`);
         const data = await res.json();
 
         if (data.status === "UNLOCKED") {
+          document.getElementById("status-results").classList.remove("hidden");
+          document.getElementById("status-restricted").classList.add("hidden");
           renderResults(data.results);
           triggerConfetti();
+        } else if (data.status === "RESTRICTED") {
+          document.getElementById("status-results").classList.add("hidden");
+          document.getElementById("status-restricted").classList.remove("hidden");
         }
       } catch (err) {
         console.error("Error fetching results:", err);
@@ -436,7 +453,7 @@
 
         sorted.forEach((res, rank) => {
           const isWinner = res.votes === highestVotes && res.votes > 0;
-          const votePercent = Math.round((res.votes / TOTAL_PLAYERS) * 100);
+          const votePercent = Math.round((res.votes / (TOTAL_PLAYERS * 2)) * 100);
 
           const item = document.createElement("div");
           item.className = `p-3 rounded-lg border transition ${
@@ -451,7 +468,7 @@
                 ${isWinner ? '<i class="fa-solid fa-crown text-amber-400 text-xs"></i>' : `<span class="text-slate-500 font-mono">#${rank + 1}</span>`}
                 <span class="font-semibold ${isWinner ? 'text-amber-200' : 'text-slate-200'}">${res.label}</span>
               </div>
-              <span class="font-bold ${isWinner ? 'text-amber-400' : 'text-slate-400'}">${res.votes} votes (${votePercent}%)</span>
+              <span class="font-bold ${isWinner ? 'text-amber-400' : 'text-slate-400'}">${res.votes} votes</span>
             </div>
             <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
               <div class="h-full rounded-full ${isWinner ? 'bg-gradient-to-r from-amber-400 to-yellow-500' : 'bg-slate-600'}" style="width: ${votePercent}%"></div>
@@ -466,9 +483,7 @@
     }
 
     async function confirmResetGame() {
-      if (!confirm("Are you sure you want to RESET the game for everyone? This will delete all current votes!")) {
-        return;
-      }
+      if (!confirm("Trinh ơi, bạn có chắc chắn muốn RESET toàn bộ game để đấu vòng mới không?")) return;
 
       try {
         const res = await fetch(API_URL, {
@@ -480,11 +495,11 @@
         if (data.success) {
           localStorage.removeItem("party_current_voter");
           currentVoter = null;
-          alert("Game has been reset! All 9 players can now vote again.");
+          alert("Game has been reset successfully!");
           location.reload();
         }
       } catch (err) {
-        alert("Reset failed. Check connection.");
+        alert("Reset failed.");
       }
     }
 
