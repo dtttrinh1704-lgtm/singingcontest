@@ -4,13 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>On VN Sustainability Team Singing Contest</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -31,27 +27,18 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
     }
-    .glass-input:focus {
-      border-color: #d946ef;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.3);
-    }
     select option { background-color: #1a1528; color: #ffffff; }
     
-    /* Custom Checkbox Style */
     .custom-checkbox:checked + label {
       background: rgba(217, 70, 239, 0.25);
       border-color: #d946ef;
       color: #ffffff;
     }
-    .custom-checkbox:checked + label .check-icon {
-      opacity: 1;
-    }
+    .custom-checkbox:checked + label .check-icon { opacity: 1; }
   </style>
 </head>
 <body class="p-4 flex flex-col items-center justify-center min-h-screen">
 
-  <!-- HEADER -->
   <header class="w-full max-w-md flex justify-between items-center mb-4 px-1">
     <div class="flex items-center space-x-2">
       <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-fuchsia-600 to-amber-400 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
@@ -72,7 +59,6 @@
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
   <main class="w-full max-w-md">
 
     <!-- STEP 1: IDENTITY -->
@@ -101,20 +87,10 @@
           <i class="fa-solid fa-arrow-right text-sm"></i>
         </button>
       </div>
-
-      <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
-        <span class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Room Status
-        </span>
-        <span id="header-vote-progress" class="font-semibold text-slate-200">Checking...</span>
-      </div>
     </section>
 
-    <!-- STEP 2: SINGLE-QUESTION ROUND VOTING -->
+    <!-- STEP 2: ROUND VOTING -->
     <section id="step-vote" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
-      
-      <!-- Stepper / Round indicator -->
       <div id="round-stepper" class="flex items-center justify-between mb-5 px-2 text-xs font-bold border-b border-white/10 pb-3">
         <div id="step-tab-0" class="text-fuchsia-400 flex items-center gap-1">
           <span class="w-5 h-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center text-[10px]">1</span> Solo
@@ -139,10 +115,7 @@
         </span>
       </div>
 
-      <!-- Single Question Container -->
-      <div id="single-question-card" class="bg-white/5 p-4 rounded-xl border border-white/10 space-y-3">
-        <!-- Dynamic Question -->
-      </div>
+      <div id="single-question-card" class="bg-white/5 p-4 rounded-xl border border-white/10 space-y-3"></div>
 
       <div class="mt-6 pt-4 border-t border-white/10">
         <button id="btn-submit-round" onclick="handleSubmitRound()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] rounded-xl font-bold text-white shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
@@ -152,27 +125,28 @@
       </div>
     </section>
 
-    <!-- STEP 3: STATUS / RESULTS -->
+    <!-- STEP 3: INTERMISSION / WAITING / RESULTS -->
     <section id="step-status" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
       
-      <!-- INTERMISSION / BETWEEN ROUNDS SCREEN (ROUND 1 & 2 ONLY) -->
+      <!-- INTERMISSION SCREEN -->
       <div id="status-intermission" class="hidden text-center py-4 space-y-4">
         <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto text-2xl">
           <i class="fa-solid fa-check"></i>
         </div>
         <h2 id="intermission-title" class="text-xl font-black text-white">Round Submitted!</h2>
-        <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Enjoy the next performances!</p>
+        <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Please wait for the Host to open the next round.</p>
         
-        <div class="p-4 bg-slate-900/60 rounded-xl border border-white/10 mt-4 space-y-3">
-          <p class="text-xs text-fuchsia-300 font-semibold" id="next-round-notice">Ready for the next round?</p>
-          <button id="btn-next-round" onclick="proceedToNextRound()" class="w-full py-3 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 rounded-xl text-xs font-bold text-white shadow-lg shadow-fuchsia-600/30 transition flex items-center justify-center gap-2">
-            <span>Proceed to Next Round</span>
-            <i class="fa-solid fa-arrow-right"></i>
+        <!-- HOST CONTROL BOX -->
+        <div id="host-round-control" class="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30 mt-4 space-y-3 hidden">
+          <p class="text-xs text-amber-300 font-semibold"><i class="fa-solid fa-crown mr-1"></i> Host Control Panel</p>
+          <button id="btn-host-next" onclick="hostUnlockNextRound()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-xs font-bold text-slate-900 shadow-lg transition flex items-center justify-center gap-2">
+            <span>Unlock Next Round for Everyone</span>
+            <i class="fa-solid fa-lock-open"></i>
           </button>
         </div>
       </div>
 
-      <!-- FINAL COMPLETED SCREEN (FOR NON-HOST PLAYERS) -->
+      <!-- RESTRICTED RESULTS FOR PLAYER -->
       <div id="status-restricted" class="hidden text-center py-6 space-y-4">
         <div class="inline-flex p-4 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/30 text-fuchsia-400 text-3xl">
           <i class="fa-solid fa-lock"></i>
@@ -180,7 +154,6 @@
         <h2 class="text-2xl font-black text-white">Voting Complete!</h2>
         <p class="text-sm text-slate-300 max-w-xs mx-auto">All votes have been tallied. The final results are strictly revealed to the <strong class="text-amber-300">Host</strong>!</p>
         
-        <!-- BUTTON TO SUBMIT ANOTHER RESPONSE -->
         <div class="pt-4 border-t border-white/10">
           <button onclick="resetCurrentSession()" class="w-full py-3.5 bg-fuchsia-600/30 hover:bg-fuchsia-600/50 border border-fuchsia-500/40 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-2 shadow-lg">
             <i class="fa-solid fa-user-plus text-fuchsia-300"></i>
@@ -189,19 +162,25 @@
         </div>
       </div>
 
-      <!-- UNLOCKED RESULTS STATE (ONLY FOR HOST - TRINH) -->
+      <!-- LIVE RESULTS FOR HOST -->
       <div id="status-results" class="hidden space-y-4">
         <div class="text-center mb-4">
           <div class="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/30 mb-2 text-amber-400 text-3xl">
             <i class="fa-solid fa-trophy"></i>
           </div>
-          <h2 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-orange-300">Contest Results!</h2>
-          <p class="text-xs text-slate-400 mt-1">Hello Host, here are the official results!</p>
+          <h2 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-orange-300">Host Live Dashboard</h2>
+          <p class="text-xs text-slate-400 mt-1">Real-time leaderboard across all rounds</p>
         </div>
 
         <div id="results-display-container" class="space-y-6"></div>
 
-        <!-- BUTTON TO SUBMIT ANOTHER RESPONSE FOR HOST -->
+        <div id="host-next-from-results" class="pt-2 hidden">
+          <button onclick="hostUnlockNextRound()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-xs font-bold text-slate-900 shadow-lg transition flex items-center justify-center gap-2">
+            <span>Proceed to Next Round</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
         <div class="pt-4 border-t border-white/10">
           <button onclick="resetCurrentSession()" class="w-full py-3.5 bg-fuchsia-600/30 hover:bg-fuchsia-600/50 border border-fuchsia-500/40 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-2 shadow-lg">
             <i class="fa-solid fa-user-plus text-fuchsia-300"></i>
@@ -214,7 +193,6 @@
 
   </main>
 
-  <!-- QR MODAL -->
   <div id="qr-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-card rounded-2xl p-6 max-w-xs w-full text-center relative border border-white/20 shadow-2xl">
       <button onclick="toggleQRModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
@@ -239,17 +217,15 @@
     const PLAYERS = ["Denny", "Trixie", "Jasmine", "Stephen", "Bella", "Dien", "Trinh", "Doan", "Hebe"];
 
     let QUESTIONS = [];
-    let currentVoter = null;
-    let currentRoundIndex = 0;
-    let submittedAnswers = {};
+    let currentVoter = localStorage.getItem("party_voter") || null;
+    let submittedRounds = {};
+    let activeRoundOnServer = 0;
     let votedUsersList = [];
 
     window.onload = function() {
-      // Clear local memory completely on load to allow new select
-      localStorage.clear();
       initQR();
       loadQuestionsAndSync();
-      setInterval(syncVotedUsers, 3500);
+      setInterval(syncVoterState, 3000);
     };
 
     async function loadQuestionsAndSync() {
@@ -257,8 +233,15 @@
         const res = await fetch(API_URL + "?action=getQuestions");
         const data = await res.json();
         QUESTIONS = data.questions || [];
+        activeRoundOnServer = data.activeRound || 0;
         parseQuestionOptions();
-        await syncVotedUsers();
+        
+        if (currentVoter) {
+          await syncVoterState();
+        } else {
+          showScreen("step-identity");
+          populateIdentityDropdown();
+        }
       } catch (err) {
         console.error("Error loading questions:", err);
       }
@@ -284,44 +267,61 @@
       });
     }
 
-    async function syncVotedUsers() {
-      try {
-        const res = await fetch(API_URL + "?action=getVotedUsers");
-        const data = await res.json();
-        votedUsersList = data.votedUsers || [];
+    async function syncVoterState() {
+      if (!currentVoter) return;
 
-        updateHeaderProgress(votedUsersList.length);
-        populateIdentityDropdown();
+      try {
+        const res = await fetch(`${API_URL}?action=getVoterState&voter=${encodeURIComponent(currentVoter)}`);
+        const data = await res.json();
+        submittedRounds = data.submittedRounds || {};
+        activeRoundOnServer = data.activeRound || 0;
 
         if (currentVoter === ADMIN_USER) {
           document.getElementById("admin-reset-btn").classList.remove("hidden");
+          document.getElementById("host-round-control").classList.remove("hidden");
+          fetchHostResults();
         } else {
           document.getElementById("admin-reset-btn").classList.add("hidden");
+          document.getElementById("host-round-control").classList.add("hidden");
         }
 
-        if (!currentVoter) {
-          showScreen("step-identity");
+        // Tự động khôi phục giao diện đúng vị trí cho người chơi
+        const currentQ = QUESTIONS[activeRoundOnServer];
+        if (!currentQ) return;
+
+        if (submittedRounds[currentQ.id]) {
+          // Đã vote xong vòng hiện tại -> vào phòng chờ/xem kết quả
+          if (currentVoter === ADMIN_USER) {
+            showScreen("step-status");
+            hideAllStatusViews();
+            document.getElementById("status-results").classList.remove("hidden");
+          } else {
+            showScreen("step-status");
+            hideAllStatusViews();
+            document.getElementById("status-intermission").classList.remove("hidden");
+            document.getElementById("intermission-title").textContent = `Round ${activeRoundOnServer + 1} Submitted!`;
+          }
+        } else {
+          // Chưa vote vòng này -> mở câu hỏi của vòng hiện tại
+          showScreen("step-vote");
+          renderCurrentRoundQuestion();
         }
+
       } catch (err) {
-        console.error("Sync error:", err);
+        console.error("Sync voter state error:", err);
       }
     }
 
     function populateIdentityDropdown() {
       const select = document.getElementById("user-select");
-      const currentSelected = select.value;
       select.innerHTML = '<option value="">-- Choose your name --</option>';
 
       PLAYERS.forEach(player => {
         const option = document.createElement("option");
         option.value = player;
-        const hasVoted = votedUsersList.includes(player);
-        option.textContent = hasVoted ? `${player} (✓ Voted)` : player;
-        option.disabled = hasVoted;
+        option.textContent = player;
         select.appendChild(option);
       });
-
-      if (currentSelected) select.value = currentSelected;
     }
 
     function handleStartVote() {
@@ -335,30 +335,19 @@
       }
 
       currentVoter = selectedName;
-      currentRoundIndex = 0;
-      submittedAnswers = {};
-
-      showScreen("step-vote");
-      renderCurrentRoundQuestion();
+      localStorage.setItem("party_voter", currentVoter);
+      syncVoterState();
     }
 
     function renderCurrentRoundQuestion() {
       document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
       updateStepperUI();
 
-      const q = QUESTIONS[currentRoundIndex];
-      const maxAllowed = (currentRoundIndex < 2) ? 2 : 1;
+      const q = QUESTIONS[activeRoundOnServer];
+      const maxAllowed = (activeRoundOnServer < 2) ? 2 : 1;
 
-      document.getElementById("round-badge-title").textContent = `Round ${currentRoundIndex + 1} of ${QUESTIONS.length}`;
-      
-      const submitBtn = document.getElementById("btn-submit-round");
-      submitBtn.disabled = false;
-
-      if (currentRoundIndex === QUESTIONS.length - 1) {
-        document.getElementById("btn-submit-text").textContent = `Submit Final Votes`;
-      } else {
-        document.getElementById("btn-submit-text").textContent = `Submit Round ${currentRoundIndex + 1} Vote`;
-      }
+      document.getElementById("round-badge-title").textContent = `Round ${activeRoundOnServer + 1} of ${QUESTIONS.length}`;
+      document.getElementById("btn-submit-text").textContent = `Submit Round ${activeRoundOnServer + 1} Vote`;
 
       const container = document.getElementById("single-question-card");
       container.innerHTML = `
@@ -367,7 +356,7 @@
             <i class="fa-solid fa-list-check"></i>
           </div>
           <div>
-            <h3 class="text-sm font-bold text-white">${currentRoundIndex + 1}. ${q.title}</h3>
+            <h3 class="text-sm font-bold text-white">${activeRoundOnServer + 1}. ${q.title}</h3>
             <p class="text-[11px] text-fuchsia-300 italic">
               ${maxAllowed === 2 ? 'Select EXACTLY 2 options below:' : 'Select EXACTLY 1 option below:'}
             </p>
@@ -410,91 +399,79 @@
     }
 
     async function handleSubmitRound() {
-      const q = QUESTIONS[currentRoundIndex];
-      const targetLimit = (currentRoundIndex < 2) ? 2 : 1;
-      const checked = Array.from(document.querySelectorAll(`input[name="${questionId = q.id}"]:checked`)).map(cb => cb.value);
+      const q = QUESTIONS[activeRoundOnServer];
+      const targetLimit = (activeRoundOnServer < 2) ? 2 : 1;
+      const checked = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`)).map(cb => cb.value);
 
       if (checked.length !== targetLimit) {
-        alert(`Please select EXACTLY ${targetLimit} option(s) for Round ${currentRoundIndex + 1}!`);
+        alert(`Please select EXACTLY ${targetLimit} option(s) for Round ${activeRoundOnServer + 1}!`);
         return;
       }
 
-      // Record answer for this round
-      submittedAnswers[q.id] = checked;
+      const btn = document.getElementById("btn-submit-round");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting...`;
 
-      // IF LAST ROUND (QUESTION 3) -> FINISH & SEND TO GOOGLE SHEETS
-      if (currentRoundIndex === QUESTIONS.length - 1) {
-        const btn = document.getElementById("btn-submit-round");
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting Final Votes...`;
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            voter: currentVoter,
+            qId: q.id,
+            answer: checked,
+            roundIndex: activeRoundOnServer
+          })
+        });
 
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ voter: currentVoter, answers: submittedAnswers })
-          });
-          
-          const data = await res.json();
-          if (data.success) {
-            await syncVotedUsers();
-            fetchAndShowResults();
-          } else {
-            alert(data.message || "Failed to submit vote!");
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">Submit Final Votes</span>`;
-          }
-        } catch (e) {
-          alert("Network error. Please try again.");
+        const data = await res.json();
+        if (data.success) {
+          await syncVoterState();
+        } else {
+          alert("Submission failed!");
           btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">Submit Final Votes</span>`;
         }
-      } else {
-        // MOVE TO INTERMISSION (BETWEEN ROUND 1 & 2 OR ROUND 2 & 3)
-        showScreen("step-status");
-        hideAllStatusViews();
-        document.getElementById("status-intermission").classList.remove("hidden");
-        document.getElementById("intermission-title").textContent = `Round ${currentRoundIndex + 1} Submitted!`;
-        document.getElementById("next-round-notice").textContent = `Ready for Round ${currentRoundIndex + 2}?`;
+      } catch (e) {
+        alert("Network error.");
+        btn.disabled = false;
       }
     }
 
-    function proceedToNextRound() {
-      currentRoundIndex++;
-      showScreen("step-vote");
-      renderCurrentRoundQuestion();
-    }
+    async function hostUnlockNextRound() {
+      const nextR = activeRoundOnServer + 1;
+      if (nextR >= QUESTIONS.length) {
+        alert("This is already the final round!");
+        return;
+      }
 
-    function updateStepperUI() {
-      for (let i = 0; i < 3; i++) {
-        const tab = document.getElementById(`step-tab-${i}`);
-        if (tab) {
-          if (i === currentRoundIndex) {
-            tab.className = "text-fuchsia-400 flex items-center gap-1 font-bold";
-          } else if (i < currentRoundIndex) {
-            tab.className = "text-emerald-400 flex items-center gap-1 font-semibold";
-            tab.querySelector("span").textContent = "✓";
-          } else {
-            tab.className = "text-slate-500 flex items-center gap-1 opacity-60";
-          }
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "setRound", voter: currentVoter, round: nextR })
+        });
+        const data = await res.json();
+        if (data.success) {
+          activeRoundOnServer = nextR;
+          await syncVoterState();
         }
+      } catch (e) {
+        alert("Failed to unlock next round.");
       }
     }
 
-    async function fetchAndShowResults() {
-      showScreen("step-status");
-      hideAllStatusViews();
-
+    async function fetchHostResults() {
       try {
         const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}`);
         const data = await res.json();
 
         if (data.status === "UNLOCKED") {
-          document.getElementById("status-results").classList.remove("hidden");
           renderResults(data.results);
-          triggerConfetti();
-        } else {
-          document.getElementById("status-restricted").classList.remove("hidden");
+          if (activeRoundOnServer < QUESTIONS.length - 1) {
+            document.getElementById("host-next-from-results").classList.remove("hidden");
+          } else {
+            document.getElementById("host-next-from-results").classList.add("hidden");
+          }
         }
       } catch (err) {
         console.error("Error fetching results:", err);
@@ -505,7 +482,7 @@
       const container = document.getElementById("results-display-container");
       container.innerHTML = "";
 
-      QUESTIONS.forEach((q, idx) => {
+      QUESTIONS.slice(0, activeRoundOnServer + 1).forEach((q, idx) => {
         const qResults = tallyData[q.id] || {};
 
         const sorted = Object.keys(qResults).map(key => ({
@@ -554,17 +531,31 @@
       });
     }
 
+    function updateStepperUI() {
+      for (let i = 0; i < 3; i++) {
+        const tab = document.getElementById(`step-tab-${i}`);
+        if (tab) {
+          if (i === activeRoundOnServer) {
+            tab.className = "text-fuchsia-400 flex items-center gap-1 font-bold";
+          } else if (i < activeRoundOnServer) {
+            tab.className = "text-emerald-400 flex items-center gap-1 font-semibold";
+            tab.querySelector("span").textContent = "✓";
+          } else {
+            tab.className = "text-slate-500 flex items-center gap-1 opacity-60";
+          }
+        }
+      }
+    }
+
     function resetCurrentSession() {
       currentVoter = null;
-      currentRoundIndex = 0;
-      submittedAnswers = {};
-      localStorage.clear();
-      syncVotedUsers();
+      localStorage.removeItem("party_voter");
       showScreen("step-identity");
+      populateIdentityDropdown();
     }
 
     async function confirmResetGame() {
-      if (!confirm("Are you sure you want to RESET the game for everyone?")) return;
+      if (!confirm("Are you sure you want to RESET the entire game for everyone?")) return;
 
       try {
         const res = await fetch(API_URL, {
@@ -575,7 +566,7 @@
         const data = await res.json();
         if (data.success) {
           resetCurrentSession();
-          alert("Game has been reset successfully!");
+          alert("Game reset successfully!");
         }
       } catch (err) {
         alert("Reset failed.");
@@ -609,12 +600,6 @@
       new QRCode(document.getElementById("qrcode-container"), {
         text: url, width: 160, height: 160, colorDark : "#0f0c1d", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
       });
-    }
-
-    function triggerConfetti() {
-      if (typeof confetti === 'function') {
-        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-      }
     }
   </script>
 </body>
