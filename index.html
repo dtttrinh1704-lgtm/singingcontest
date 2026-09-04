@@ -32,15 +32,16 @@
       color: #fff;
     }
     select option { background-color: #1a1528; color: #ffffff; }
-    
-    /* Custom Checkbox Style */
-    .custom-checkbox:checked + label {
-      background: rgba(217, 70, 239, 0.25);
-      border-color: #d946ef;
-      color: #ffffff;
+
+    /* Custom Option Card Selection Style */
+    .option-card:has(input:checked) {
+      background: rgba(217, 70, 239, 0.25) !important;
+      border-color: #d946ef !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 12px rgba(217, 70, 239, 0.3);
     }
-    .custom-checkbox:checked + label .check-icon { 
-      opacity: 1 !important; 
+    .option-card:has(input:checked) .check-icon {
+      opacity: 1 !important;
     }
   </style>
 </head>
@@ -204,6 +205,7 @@
 
   </main>
 
+  <!-- QR MODAL -->
   <div id="qr-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-card rounded-2xl p-6 max-w-xs w-full text-center relative border border-white/20 shadow-2xl">
       <button onclick="toggleQRModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
@@ -386,22 +388,27 @@
 
       availableChoices.forEach((choice, optIdx) => {
         const checkId = `check-${q.id}-${optIdx}`;
-        const choiceDiv = document.createElement("div");
-        choiceDiv.innerHTML = `
-          <input type="checkbox" id="${checkId}" name="question_option" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit(${maxAllowed}, event)">
-          <label for="${checkId}" class="flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition">
-            <span>${choice.label}</span>
-            <i class="fa-solid fa-check text-xs opacity-0 check-icon transition-opacity"></i>
-          </label>
+        
+        // Thẻ label bao bọc toàn bộ input, hỗ trợ chạm bấm mượt 100%
+        const labelCard = document.createElement("label");
+        labelCard.setAttribute("for", checkId);
+        labelCard.className = "option-card flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition select-none";
+
+        labelCard.innerHTML = `
+          <span>${choice.label}</span>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="${checkId}" name="contest_option" value="${choice.label}" class="hidden" onchange="handleCheckboxLimit(${maxAllowed}, event)">
+            <i class="fa-solid fa-check text-xs opacity-0 check-icon text-fuchsia-400 transition-opacity"></i>
+          </div>
         `;
-        optionsContainer.appendChild(choiceDiv);
+        optionsContainer.appendChild(labelCard);
       });
 
       container.appendChild(optionsContainer);
     }
 
     function handleCheckboxLimit(maxAllowed, event) {
-      const checkedBoxes = document.querySelectorAll('input[name="question_option"]:checked');
+      const checkedBoxes = document.querySelectorAll('input[name="contest_option"]:checked');
       if (checkedBoxes.length > maxAllowed) {
         alert(`You can only select a maximum of ${maxAllowed} option(s) for this question!`);
         event.target.checked = false;
@@ -411,7 +418,7 @@
     async function handleSubmitRound() {
       const q = QUESTIONS[activeRoundOnServer];
       const targetLimit = (activeRoundOnServer < 2) ? 2 : 1;
-      const checked = Array.from(document.querySelectorAll('input[name="question_option"]:checked')).map(cb => cb.value);
+      const checked = Array.from(document.querySelectorAll('input[name="contest_option"]:checked')).map(cb => cb.value);
 
       if (checked.length !== targetLimit) {
         alert(`Please select EXACTLY ${targetLimit} option(s) for Round ${activeRoundOnServer + 1}!`);
@@ -557,7 +564,7 @@
 
         const data = await res.json();
         if (data.success) {
-          alert("✅ Đã reset toàn bộ game thành công! Mọi người có thể bắt đầu lại Vòng 1.");
+          alert("✅ Đã reset toàn bộ game thành công!");
           resetCurrentSession();
         } else {
           alert("Lỗi: Không thể reset game.");
