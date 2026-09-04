@@ -132,9 +132,9 @@
         <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Please wait for the Host to open the next round.</p>
         
         <div class="pt-2">
-          <button onclick="syncVoterState()" class="px-4 py-2 bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 rounded-xl text-xs font-semibold text-fuchsia-300 transition inline-flex items-center gap-2 shadow">
-            <i class="fa-solid fa-rotate-right"></i>
-            <span>Refresh Round Status</span>
+          <button onclick="forceRefreshRound()" class="px-5 py-2.5 bg-fuchsia-600/30 hover:bg-fuchsia-600/50 active:scale-95 border border-fuchsia-500/40 rounded-xl text-xs font-bold text-white transition inline-flex items-center gap-2 shadow-lg">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Load Active Round</span>
           </button>
         </div>
 
@@ -224,7 +224,7 @@
     window.onload = function() {
       initQR();
       loadQuestionsAndSync();
-      setInterval(syncVoterState, 1200);
+      setInterval(syncVoterState, 1500);
     };
 
     async function loadQuestionsAndSync() {
@@ -287,6 +287,8 @@
         const currentQ = QUESTIONS[activeRoundOnServer];
         if (!currentQ) return;
 
+        // KIỂM TRA LOGIC CHUYỂN VÒNG THÔNG MINH (TRÁNH KẸT):
+        // Nếu đã vote câu của vòng hiện tại -> vào màn hình chờ
         if (submittedRounds[currentQ.id]) {
           renderedRoundIndex = -1;
           if (currentVoter === ADMIN_USER) {
@@ -300,6 +302,7 @@
             document.getElementById("intermission-title").textContent = `Round ${activeRoundOnServer + 1} Submitted!`;
           }
         } else {
+          // Chưa vote câu của vòng hiện tại -> ép mở câu hỏi của vòng hiện tại ngay lập tức!
           showScreen("step-vote");
           if (renderedRoundIndex !== activeRoundOnServer) {
             renderCurrentRoundQuestion();
@@ -309,6 +312,11 @@
       } catch (err) {
         console.error("Sync voter state error:", err);
       }
+    }
+
+    function forceRefreshRound() {
+      renderedRoundIndex = -1;
+      syncVoterState();
     }
 
     function populateIdentityDropdown() {
@@ -346,7 +354,7 @@
       const q = QUESTIONS[activeRoundOnServer];
       const maxAllowed = (activeRoundOnServer < 2) ? 2 : 1;
 
-      document.getElementById("round-badge-title").textContent = `Round ${activeRoundOnServer + 1} of ${QUESTIONS.length}`;
+      document.getElementById("round-badge-title").textContent = `Round ${activeRoundOnServer + 1} of${QUESTIONS.length}`;
       
       const submitBtn = document.getElementById("btn-submit-round");
       submitBtn.disabled = false;
@@ -359,7 +367,7 @@
             <i class="fa-solid fa-list-check"></i>
           </div>
           <div>
-            <h3 class="text-sm font-bold text-white">${activeRoundOnServer + 1}. ${q.title}</h3>
+            <h3 class="text-sm font-bold text-white">${activeRoundOnServer + 1}.${q.title}</h3>
             <p class="text-[11px] text-fuchsia-300 italic">
               ${maxAllowed === 2 ? 'Select EXACTLY 2 options below:' : 'Select EXACTLY 1 option below:'}
             </p>
@@ -381,7 +389,7 @@
         const checkId = `check-${q.id}-${optIdx}`;
         const choiceDiv = document.createElement("div");
         choiceDiv.innerHTML = `
-          <input type="checkbox" id="${checkId}" name="${q.id}" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit('${q.id}', ${maxAllowed}, event)">
+          <input type="checkbox" id="${checkId}" name="${q.id}" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit('${q.id}',${maxAllowed}, event)">
           <label for="${checkId}" class="flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition">
             <span>${choice.label}</span>
             <i class="fa-solid fa-check text-xs opacity-0 check-icon transition-opacity"></i>
@@ -407,7 +415,7 @@
       const checked = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`)).map(cb => cb.value);
 
       if (checked.length !== targetLimit) {
-        alert(`Please select EXACTLY ${targetLimit} option(s) for Round ${activeRoundOnServer + 1}!`);
+        alert(`Please select EXACTLY ${targetLimit} option(s) for Round${activeRoundOnServer + 1}!`);
         return;
       }
 
@@ -433,10 +441,12 @@
         } else {
           alert("Submission failed!");
           btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">Submit Round ${activeRoundOnServer + 1} Vote</span>`;
         }
       } catch (e) {
         alert("Network error.");
         btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">Submit Round ${activeRoundOnServer + 1} Vote</span>`;
       }
     }
 
@@ -599,9 +609,4 @@
       const currentUrl = window.location.href.split('?')[0];
       document.getElementById("current-url-text").textContent = currentUrl;
       
-      const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentUrl)}`;
-      document.getElementById("qrcode-container").innerHTML = `<img src="${qrImgUrl}" alt="QR Code" class="mx-auto rounded-lg shadow-md" />`;
-    }
-  </script>
-</body>
-</html>
+      const qrImgUrl = `
