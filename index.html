@@ -37,6 +37,7 @@
 </head>
 <body class="p-4 flex flex-col items-center justify-center min-h-screen">
 
+  <!-- HEADER -->
   <header class="w-full max-w-md flex justify-between items-center mb-4 px-1">
     <div class="flex items-center space-x-2">
       <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-fuchsia-600 to-amber-400 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
@@ -58,6 +59,7 @@
     </div>
   </header>
 
+  <!-- MAIN CONTAINER -->
   <main class="w-full max-w-md">
 
     <!-- STEP 1: IDENTITY -->
@@ -133,8 +135,9 @@
           <i class="fa-solid fa-check"></i>
         </div>
         <h2 id="intermission-title" class="text-xl font-black text-white">Round Submitted!</h2>
-        <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Please wait, screen will update automatically when Host unlocks next round.</p>
+        <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote has been recorded. Page will automatically reload when Host starts the next round.</p>
 
+        <!-- HOST CONTROL BOX -->
         <div id="host-round-control" class="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30 mt-4 space-y-3 hidden">
           <p class="text-xs text-amber-300 font-semibold"><i class="fa-solid fa-crown mr-1"></i> Host Control Panel</p>
           <button id="btn-host-next" onclick="hostUnlockNextRound()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-xs font-bold text-slate-900 shadow-lg transition flex items-center justify-center gap-2">
@@ -215,11 +218,10 @@
     const PLAYERS = ["Denny", "Trixie", "Jasmine", "Stephen", "Bella", "Dien", "Trinh", "Doan", "Hebe"];
 
     let QUESTIONS = [];
-    let currentVoter = sessionStorage.getItem("party_active_voter") || null;
+    let currentVoter = null;
     let submittedRounds = {};
-    let activeRoundOnServer = 0;
-    let renderedRoundIndex = -1;
-    let isSyncing = false;
+    let activeRoundOnServer = -1;
+    let initialRoundCheck = -1;
 
     window.onload = function() {
       initQR();
@@ -227,20 +229,19 @@
       populateIdentityDropdown();
 
       loadQuestionsAndSync();
-      setInterval(syncVoterState, 2500); // 2.5s đảm bảo không bị nghẽn API
+      setInterval(syncVoterState, 2000);
     };
 
     async function loadQuestionsAndSync() {
       try {
-        const res = await fetch(`${API_URL}?action=getQuestions`);
+        const res = await fetch(`${API_URL}?action=getQuestions&_t=${Date.now()}`);
         const data = await res.json();
         QUESTIONS = data.questions || [];
-        activeRoundOnServer = parseInt(data.activeRound || 0, 10);
+        
+        const serverRound = parseInt(data.activeRound || 0, 10);
+        activeRoundOnServer = serverRound;
+        initialRoundCheck = serverRound;
         parseQuestionOptions();
-
-        if (currentVoter) {
-          syncVoterState();
-        }
       } catch (err) {
         console.error("Error loading questions:", err);
       }
@@ -280,14 +281,26 @@
     }
 
     async function syncVoterState() {
-      if (!currentVoter || isSyncing) return;
-      isSyncing = true;
-
       try {
-        const res = await fetch(`${API_URL}?action=getVoterState&voter=${encodeURIComponent(currentVoter)}`);
+        const fetchUrl = currentVoter 
+          ? `${API_URL}?action=getVoterState&voter=${encodeURIComponent(currentVoter)}&_t=${Date.now()}`
+          : `${API_URL}?action=getQuestions&_t=${Date.now()}`;
+
+        const res = await fetch(fetchUrl);
         const data = await res.json();
+        
+        const newServerRound = parseInt(data.activeRound || 0, 10);
+
+        // NẾU PHÁT HIỆN HOST CHUYỂN VÒNG THI -> NẠP LẠI (RELOAD) TRANG WEB TỰ ĐỘNG!
+        if (initialRoundCheck !== -1 && newServerRound !== initialRoundCheck) {
+          window.location.reload();
+          return;
+        }
+
+        activeRoundOnServer = newServerRound;
         submittedRounds = data.submittedRounds || {};
-        activeRoundOnServer = parseInt(data.activeRound || 0, 10);
+
+        if (!currentVoter) return;
 
         if (currentVoter === ADMIN_USER) {
           document.getElementById("admin-reset-btn").classList.remove("hidden");
@@ -299,13 +312,9 @@
         }
 
         const currentQ = QUESTIONS[activeRoundOnServer];
-        if (!currentQ) {
-          isSyncing = false;
-          return;
-        }
+        if (!currentQ) return;
 
         if (submittedRounds[currentQ.id]) {
-          renderedRoundIndex = -1;
           if (currentVoter === ADMIN_USER) {
             showScreen("step-status");
             hideAllStatusViews();
@@ -318,15 +327,11 @@
           }
         } else {
           showScreen("step-vote");
-          if (renderedRoundIndex !== activeRoundOnServer) {
-            renderCurrentRoundQuestion();
-          }
+          renderCurrentRoundQuestion();
         }
 
       } catch (err) {
         console.error("Sync voter state error:", err);
-      } finally {
-        isSyncing = false;
       }
     }
 
@@ -341,12 +346,10 @@
       }
 
       currentVoter = selectedName;
-      sessionStorage.setItem("party_active_voter", currentVoter);
       syncVoterState();
     }
 
     function renderCurrentRoundQuestion() {
-      renderedRoundIndex = activeRoundOnServer;
       document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
       updateStepperUI();
 
@@ -464,8 +467,7 @@
         });
         const data = await res.json();
         if (data.success) {
-          activeRoundOnServer = nextR;
-          await syncVoterState();
+          window.location.reload();
         }
       } catch (e) {
         alert("Failed to unlock next round.");
@@ -474,7 +476,7 @@
 
     async function fetchHostResults() {
       try {
-        const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}`);
+        const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}&_t=${Date.now()}`);
         const data = await res.json();
 
         if (data.status === "UNLOCKED") {
@@ -565,10 +567,7 @@
 
     function resetCurrentSession() {
       currentVoter = null;
-      renderedRoundIndex = -1;
-      sessionStorage.removeItem("party_active_voter");
-      showScreen("step-identity");
-      populateIdentityDropdown();
+      window.location.reload();
     }
 
     function updateStepperUI() {
