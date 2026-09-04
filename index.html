@@ -33,7 +33,7 @@
     }
     select option { background-color: #1a1528; color: #ffffff; }
 
-    /* Custom Selected Option Styling */
+    /* Custom Clickable Option Style */
     .option-btn.selected {
       background: rgba(217, 70, 239, 0.25) !important;
       border-color: #d946ef !important;
@@ -148,7 +148,7 @@
         <h2 id="intermission-title" class="text-xl font-black text-white">Round Submitted!</h2>
         <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Please wait for the Host to open the next round.</p>
         
-        <!-- HOST CONTROL BOX -->
+        <!-- HOST CONTROL PANEL -->
         <div id="host-round-control" class="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30 mt-4 space-y-3 hidden">
           <p class="text-xs text-amber-300 font-semibold"><i class="fa-solid fa-crown mr-1"></i> Host Control Panel</p>
           <button id="btn-host-next" onclick="hostUnlockNextRound()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-xs font-bold text-slate-900 shadow-lg transition flex items-center justify-center gap-2">
@@ -233,7 +233,7 @@
     let currentVoter = localStorage.getItem("party_voter") || null;
     let submittedRounds = {};
     let activeRoundOnServer = 0;
-    let selectedOptions = []; // Mảng chứa các lựa chọn đang chọn
+    let selectedOptions = [];
 
     window.onload = function() {
       initQR();
@@ -352,7 +352,7 @@
     function renderCurrentRoundQuestion() {
       document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
       updateStepperUI();
-      selectedOptions = []; // Reset lựa chọn khi render vòng mới
+      selectedOptions = [];
 
       const q = QUESTIONS[activeRoundOnServer];
       const maxAllowed = (activeRoundOnServer < 2) ? 2 : 1;
@@ -388,10 +388,9 @@
       const optionsContainer = document.createElement("div");
       optionsContainer.className = "space-y-2 pt-2";
 
-      availableChoices.forEach((choice, optIdx) => {
+      availableChoices.forEach((choice) => {
         const optionBtn = document.createElement("div");
         optionBtn.className = "option-btn flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition select-none";
-        optionBtn.setAttribute("data-value", choice.label);
 
         optionBtn.innerHTML = `
           <span>${choice.label}</span>
@@ -412,11 +411,9 @@
       const index = selectedOptions.indexOf(val);
 
       if (index > -1) {
-        // Bỏ chọn nếu đã được tích
         selectedOptions.splice(index, 1);
         element.classList.remove("selected");
       } else {
-        // Kiểm tra giới hạn tối đa
         if (selectedOptions.length >= maxAllowed) {
           alert(`You can only select a maximum of ${maxAllowed} option(s) for this question!`);
           return;
