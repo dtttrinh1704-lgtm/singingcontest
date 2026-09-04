@@ -135,7 +135,7 @@
           <i class="fa-solid fa-check"></i>
         </div>
         <h2 id="intermission-title" class="text-xl font-black text-white">Round Submitted!</h2>
-        <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote has been recorded. Page will automatically reload when Host starts the next round.</p>
+        <p id="intermission-subtext" class="text-xs text-slate-300 max-w-xs mx-auto">Your vote has been recorded. Page will automatically reload when Host starts the next round.</p>
 
         <!-- HOST CONTROL BOX -->
         <div id="host-round-control" class="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30 mt-4 space-y-3 hidden">
@@ -222,8 +222,6 @@
     let submittedRounds = {};
     let activeRoundOnServer = -1;
     let initialRoundCheck = -1;
-    
-    // ĐẶT CỜ CHỐNG NHẢ CHECKBOX
     let isUserSelecting = false; 
 
     window.onload = function() {
@@ -284,7 +282,6 @@
     }
 
     async function syncVoterState() {
-      // NẾU NGƯỜI CHƠI ĐANG TRONG MÀN HÌNH CHỌN CÂU TRẢ LỜI KHÔNG ĐƯỢC CHẠY QUÉT NGẦM
       if (isUserSelecting) return;
 
       try {
@@ -297,7 +294,6 @@
         
         const newServerRound = parseInt(data.activeRound || 0, 10);
 
-        // Phát hiện Host chuyển vòng -> Tự động nạp lại trang
         if (initialRoundCheck !== -1 && newServerRound !== initialRoundCheck) {
           window.location.reload();
           return;
@@ -330,6 +326,14 @@
             hideAllStatusViews();
             document.getElementById("status-intermission").classList.remove("hidden");
             document.getElementById("intermission-title").textContent = `Round ${activeRoundOnServer + 1} Submitted!`;
+            
+            // TÙY CHỈNH THÔNG BÁO CHO ROUND 3 (ROUND CUỐI)
+            const subtextEl = document.getElementById("intermission-subtext");
+            if (activeRoundOnServer >= 2) {
+              subtextEl.textContent = "Your vote has been recorded. Stay tuned and wait for final result.";
+            } else {
+              subtextEl.textContent = "Your vote has been recorded. Page will automatically reload when Host starts the next round.";
+            }
           }
         } else {
           showScreen("step-vote");
@@ -356,7 +360,6 @@
     }
 
     function renderCurrentRoundQuestion() {
-      // BẬT CỜ BẢO VỆ KHI FORM BÌNH CHỌN MỞ RA
       isUserSelecting = true;
 
       document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
@@ -448,7 +451,6 @@
 
         const data = await res.json();
         if (data.success) {
-          // NỘP XONG MỚI MỞ LẠI QUÉT NGẦM
           isUserSelecting = false; 
           await syncVoterState();
         } else {
