@@ -6,7 +6,6 @@
   <title>Host Control Panel - On VN Sustainability</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     body {
@@ -24,7 +23,6 @@
 </head>
 <body class="p-6 max-w-4xl mx-auto">
 
-  <!-- HEADER -->
   <header class="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
     <div class="flex items-center gap-3">
       <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 flex items-center justify-center shadow-lg shadow-amber-500/30">
@@ -44,15 +42,14 @@
     </div>
   </header>
 
-  <!-- CONTROLS & LIVE STATS -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="glass-card p-5 rounded-2xl text-center">
       <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Active Stage</span>
-      <span id="active-round-badge" class="text-lg font-black text-fuchsia-400">Round 1 (Solo)</span>
+      <span id="active-round-badge" class="text-lg font-black text-fuchsia-400">Loading...</span>
     </div>
 
     <div class="glass-card p-5 rounded-2xl text-center">
-      <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Current Votes Voted</span>
+      <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Votes In Current Round</span>
       <span id="voted-count-text" class="text-lg font-black text-emerald-400">0 / 9 Players</span>
     </div>
 
@@ -64,19 +61,18 @@
     </div>
   </div>
 
-  <!-- REALTIME LEADERBOARD -->
   <section class="glass-card p-6 rounded-2xl shadow-2xl space-y-6">
     <div class="flex items-center justify-between border-b border-white/10 pb-3">
       <h2 class="text-base font-bold text-white flex items-center gap-2">
         <i class="fa-solid fa-chart-line text-amber-400"></i> Live Tally Results
       </h2>
       <span class="text-[11px] text-emerald-400 font-semibold animate-pulse flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live Updating (3s)
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live Updating (1.2s)
       </span>
     </div>
 
     <div id="results-display-container" class="space-y-6">
-      <div class="text-center py-8 text-slate-500 text-xs">Loading live results from Google Sheets...</div>
+      <div class="text-center py-8 text-slate-500 text-xs">Loading live results...</div>
     </div>
   </section>
 
@@ -90,7 +86,7 @@
 
     window.onload = function() {
       loadQuestionsAndSync();
-      setInterval(syncAdminData, 3000);
+      setInterval(syncAdminData, 1200);
     };
 
     async function loadQuestionsAndSync() {
@@ -98,7 +94,7 @@
         const res = await fetch(API_URL + "?action=getQuestions");
         const data = await res.json();
         QUESTIONS = data.questions || [];
-        activeRoundOnServer = data.activeRound || 0;
+        activeRoundOnServer = parseInt(data.activeRound || 0, 10);
         await syncAdminData();
       } catch (err) {
         console.error("Error loading questions:", err);
@@ -110,7 +106,7 @@
         const resState = await fetch(`${API_URL}?action=getVoterState&voter=${encodeURIComponent(ADMIN_USER)}`);
         const dataState = await resState.json();
         
-        activeRoundOnServer = dataState.activeRound || 0;
+        activeRoundOnServer = parseInt(dataState.activeRound || 0, 10);
         const votedCounts = dataState.votedCounts || {};
         const currentRoundCount = votedCounts[activeRoundOnServer] || 0;
 
@@ -203,8 +199,11 @@
     }
 
     async function unlockNextRound() {
+      const btn = document.getElementById("btn-next-round");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Unlocking...`;
+
       const nextR = activeRoundOnServer + 1;
-      if (nextR >= QUESTIONS.length) return;
 
       try {
         const res = await fetch(API_URL, {
@@ -215,15 +214,19 @@
         const data = await res.json();
         if (data.success) {
           activeRoundOnServer = nextR;
-          syncAdminData();
+          await syncAdminData();
+        } else {
+          alert("Could not update round on server!");
         }
       } catch (e) {
         alert("Failed to unlock next round.");
+      } finally {
+        btn.disabled = false;
       }
     }
 
     async function confirmResetGame() {
-      if (!confirm("⚠️ Host Trinh ơi, bạn có chắc chắn muốn RESET TOÀN BỘ GAME không?\n\nTất cả phiếu bầu sẽ bị xóa sạch và cuộc thi sẽ đưa về Vòng 1!")) return;
+      if (!confirm("⚠️ Host Trinh ơi, bạn có chắc chắn muốn RESET TOÀN BỘ GAME không?")) return;
 
       try {
         const res = await fetch(API_URL, {
@@ -234,7 +237,8 @@
         const data = await res.json();
         if (data.success) {
           alert("✅ Đã reset toàn bộ game thành công!");
-          syncAdminData();
+          activeRoundOnServer = 0;
+          await syncAdminData();
         }
       } catch (err) {
         alert("Reset failed.");
