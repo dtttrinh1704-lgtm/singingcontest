@@ -82,7 +82,7 @@
           <i class="fa-solid fa-trophy"></i>
         </div>
         <h1 class="text-xl font-black text-white uppercase tracking-wider">Singing Contest</h1>
-        <p class="text-xs text-slate-400 mt-1">Select your name to start live round voting.</p>
+        <p class="text-xs text-slate-400 mt-1">Select your name to start voting.</p>
       </div>
 
       <div class="space-y-4">
@@ -141,30 +141,30 @@
 
       <!-- Single Question Container -->
       <div id="single-question-card" class="bg-white/5 p-4 rounded-xl border border-white/10 space-y-3">
-        <!-- Question details populated by JS -->
+        <!-- Dynamic Question -->
       </div>
 
       <div class="mt-6 pt-4 border-t border-white/10">
         <button id="btn-submit-round" onclick="handleSubmitRound()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] rounded-xl font-bold text-white shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
           <i class="fa-solid fa-paper-plane"></i>
-          <span id="btn-submit-text">Submit Round 1 Vote</span>
+          <span id="btn-submit-text">Submit Round Vote</span>
         </button>
       </div>
     </section>
 
-    <!-- STEP 3: INTERMISSION / WAITING / RESULTS -->
+    <!-- STEP 3: STATUS / RESULTS -->
     <section id="step-status" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
       
-      <!-- INTERMISSION / BETWEEN ROUNDS SCREEN -->
+      <!-- INTERMISSION / BETWEEN ROUNDS SCREEN (ROUND 1 & 2 ONLY) -->
       <div id="status-intermission" class="hidden text-center py-4 space-y-4">
         <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto text-2xl">
           <i class="fa-solid fa-check"></i>
         </div>
         <h2 id="intermission-title" class="text-xl font-black text-white">Round Submitted!</h2>
-        <p id="intermission-desc" class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Enjoy the next performances!</p>
+        <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Enjoy the next performances!</p>
         
-        <div class="p-4 bg-slate-900/60 rounded-xl border border-white/10 mt-4">
-          <p class="text-xs text-fuchsia-300 font-semibold mb-2" id="next-round-notice">Ready for the next round?</p>
+        <div class="p-4 bg-slate-900/60 rounded-xl border border-white/10 mt-4 space-y-3">
+          <p class="text-xs text-fuchsia-300 font-semibold" id="next-round-notice">Ready for the next round?</p>
           <button id="btn-next-round" onclick="proceedToNextRound()" class="w-full py-3 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 rounded-xl text-xs font-bold text-white shadow-lg shadow-fuchsia-600/30 transition flex items-center justify-center gap-2">
             <span>Proceed to Next Round</span>
             <i class="fa-solid fa-arrow-right"></i>
@@ -172,39 +172,26 @@
         </div>
       </div>
 
-      <!-- FINAL WAITING FOR ALL 9 PLAYERS -->
-      <div id="status-waiting" class="hidden text-center py-4">
-        <div class="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-          <div class="absolute inset-0 rounded-full border-4 border-fuchsia-500/20 border-t-fuchsia-500 animate-spin"></div>
-          <i class="fa-solid fa-envelope-open-text text-2xl text-fuchsia-400"></i>
-        </div>
-
-        <h2 class="text-2xl font-black text-white">All Rounds Complete!</h2>
-        <p class="text-sm text-slate-400 mt-1 max-w-xs mx-auto">Waiting for all 9 contestants to complete all voting rounds...</p>
-
-        <div class="mt-6 bg-slate-900/60 rounded-xl p-4 border border-white/10">
-          <div class="flex justify-between items-center text-xs font-semibold mb-2">
-            <span class="text-slate-300">Total Contestants Finished</span>
-            <span id="waiting-count-text" class="text-fuchsia-400">0 / 9</span>
-          </div>
-          <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden p-0.5">
-            <div id="waiting-progress-bar" class="h-full bg-gradient-to-r from-fuchsia-500 to-pink-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RESTRICTED RESULTS STATE (FOR NON-HOST PLAYERS) -->
-      <div id="status-restricted" class="hidden text-center py-6 space-y-3">
+      <!-- FINAL COMPLETED SCREEN (FOR NON-HOST PLAYERS) -->
+      <div id="status-restricted" class="hidden text-center py-6 space-y-4">
         <div class="inline-flex p-4 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/30 text-fuchsia-400 text-3xl">
           <i class="fa-solid fa-lock"></i>
         </div>
-        <h2 class="text-2xl font-black text-white">Voting Completed!</h2>
+        <h2 class="text-2xl font-black text-white">Voting Complete!</h2>
         <p class="text-sm text-slate-300 max-w-xs mx-auto">All votes have been tallied. The final results are strictly revealed to the <strong class="text-amber-300">Host</strong>!</p>
+        
+        <!-- BUTTON TO SUBMIT ANOTHER RESPONSE -->
+        <div class="pt-4 border-t border-white/10">
+          <button onclick="resetCurrentSession()" class="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-slate-200 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-user-plus text-fuchsia-400"></i>
+            <span>Submit another response</span>
+          </button>
+        </div>
       </div>
 
       <!-- UNLOCKED RESULTS STATE (ONLY FOR HOST - TRINH) -->
-      <div id="status-results" class="hidden">
-        <div class="text-center mb-6">
+      <div id="status-results" class="hidden space-y-4">
+        <div class="text-center mb-4">
           <div class="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/30 mb-2 text-amber-400 text-3xl">
             <i class="fa-solid fa-trophy"></i>
           </div>
@@ -213,6 +200,14 @@
         </div>
 
         <div id="results-display-container" class="space-y-6"></div>
+
+        <!-- BUTTON TO SUBMIT ANOTHER RESPONSE FOR HOST TOO -->
+        <div class="pt-4 border-t border-white/10">
+          <button onclick="resetCurrentSession()" class="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-slate-200 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-user-plus text-fuchsia-400"></i>
+            <span>Submit another response</span>
+          </button>
+        </div>
       </div>
 
     </section>
@@ -244,9 +239,9 @@
     const PLAYERS = ["Denny", "Trixie", "Jasmine", "Stephen", "Bella", "Dien", "Trinh", "Doan", "Hebe"];
 
     let QUESTIONS = [];
-    let currentVoter = localStorage.getItem("party_current_voter") || null;
-    let currentRoundIndex = parseInt(localStorage.getItem("party_current_round") || "0");
-    let submittedAnswers = JSON.parse(localStorage.getItem("party_submitted_answers") || "{}");
+    let currentVoter = null;
+    let currentRoundIndex = 0;
+    let submittedAnswers = {};
     let votedUsersList = [];
 
     window.onload = function() {
@@ -302,46 +297,11 @@
           document.getElementById("admin-reset-btn").classList.add("hidden");
         }
 
-        if (votedUsersList.length >= TOTAL_PLAYERS) {
-          fetchAndShowResults();
-        } else if (currentVoter && votedUsersList.includes(currentVoter)) {
-          // All 3 rounds submitted on server
-          showScreen("step-status");
-          hideAllStatusViews();
-          document.getElementById("status-waiting").classList.remove("hidden");
-          updateWaitingProgress(votedUsersList.length);
-        } else if (currentVoter) {
-          checkLocalRoundState();
-        } else {
+        if (!currentVoter) {
           showScreen("step-identity");
         }
       } catch (err) {
         console.error("Sync error:", err);
-      }
-    }
-
-    function checkLocalRoundState() {
-      if (QUESTIONS.length === 0) return;
-
-      if (currentRoundIndex < QUESTIONS.length) {
-        const currentQ = QUESTIONS[currentRoundIndex];
-        if (submittedAnswers[currentQ.id]) {
-          // Show intermission screen between rounds
-          showScreen("step-status");
-          hideAllStatusViews();
-          document.getElementById("status-intermission").classList.remove("hidden");
-          document.getElementById("intermission-title").textContent = `Round ${currentRoundIndex + 1} Submitted!`;
-          document.getElementById("next-round-notice").textContent = `Ready for Round ${currentRoundIndex + 2}?`;
-        } else {
-          // Show current active round question
-          showScreen("step-vote");
-          renderCurrentRoundQuestion();
-        }
-      } else {
-        // Local state done, waiting on server sync
-        showScreen("step-status");
-        hideAllStatusViews();
-        document.getElementById("status-waiting").classList.remove("hidden");
       }
     }
 
@@ -373,8 +333,11 @@
       }
 
       currentVoter = selectedName;
-      localStorage.setItem("party_current_voter", currentVoter);
-      checkLocalRoundState();
+      currentRoundIndex = 0;
+      submittedAnswers = {};
+
+      showScreen("step-vote");
+      renderCurrentRoundQuestion();
     }
 
     function renderCurrentRoundQuestion() {
@@ -385,7 +348,12 @@
       const maxAllowed = (currentRoundIndex < 2) ? 2 : 1;
 
       document.getElementById("round-badge-title").textContent = `Round ${currentRoundIndex + 1} of ${QUESTIONS.length}`;
-      document.getElementById("btn-submit-text").textContent = `Submit Round ${currentRoundIndex + 1} Vote`;
+      
+      if (currentRoundIndex === QUESTIONS.length - 1) {
+        document.getElementById("btn-submit-text").textContent = `Submit Final Votes`;
+      } else {
+        document.getElementById("btn-submit-text").textContent = `Submit Round ${currentRoundIndex + 1} Vote`;
+      }
 
       const container = document.getElementById("single-question-card");
       container.innerHTML = `
@@ -446,15 +414,14 @@
         return;
       }
 
-      // Record answer locally for this round
+      // Record answer for this round
       submittedAnswers[q.id] = checked;
-      localStorage.setItem("party_submitted_answers", JSON.stringify(submittedAnswers));
 
-      // If this is the final round, send ALL answers to Google Sheet
+      // IF LAST ROUND (QUESTION 3) -> FINISH & SEND TO GOOGLE SHEETS
       if (currentRoundIndex === QUESTIONS.length - 1) {
         const btn = document.getElementById("btn-submit-round");
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting Final Ballot...`;
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting Final Votes...`;
 
         try {
           const res = await fetch(API_URL, {
@@ -465,7 +432,8 @@
           
           const data = await res.json();
           if (data.success) {
-            syncVotedUsers();
+            await syncVotedUsers();
+            fetchAndShowResults();
           } else {
             alert(data.message || "Failed to submit vote!");
             btn.disabled = false;
@@ -475,7 +443,7 @@
           btn.disabled = false;
         }
       } else {
-        // Move to intermission screen before next round
+        // MOVE TO INTERMISSION (BETWEEN ROUND 1 & 2 OR ROUND 2 & 3)
         showScreen("step-status");
         hideAllStatusViews();
         document.getElementById("status-intermission").classList.remove("hidden");
@@ -486,8 +454,8 @@
 
     function proceedToNextRound() {
       currentRoundIndex++;
-      localStorage.setItem("party_current_round", currentRoundIndex.toString());
-      checkLocalRoundState();
+      showScreen("step-vote");
+      renderCurrentRoundQuestion();
     }
 
     function updateStepperUI() {
@@ -518,7 +486,7 @@
           document.getElementById("status-results").classList.remove("hidden");
           renderResults(data.results);
           triggerConfetti();
-        } else if (data.status === "RESTRICTED") {
+        } else {
           document.getElementById("status-restricted").classList.remove("hidden");
         }
       } catch (err) {
@@ -579,6 +547,14 @@
       });
     }
 
+    function resetCurrentSession() {
+      currentVoter = null;
+      currentRoundIndex = 0;
+      submittedAnswers = {};
+      syncVotedUsers();
+      showScreen("step-identity");
+    }
+
     async function confirmResetGame() {
       if (!confirm("Are you sure you want to RESET the game for everyone?")) return;
 
@@ -590,14 +566,8 @@
         });
         const data = await res.json();
         if (data.success) {
-          localStorage.removeItem("party_current_voter");
-          localStorage.removeItem("party_current_round");
-          localStorage.removeItem("party_submitted_answers");
-          currentVoter = null;
-          currentRoundIndex = 0;
-          submittedAnswers = {};
+          resetCurrentSession();
           alert("Game has been reset successfully!");
-          location.reload();
         }
       } catch (err) {
         alert("Reset failed.");
@@ -608,15 +578,8 @@
       document.getElementById("header-vote-progress").textContent = `${count} / ${TOTAL_PLAYERS} voted`;
     }
 
-    function updateWaitingProgress(count) {
-      const percentage = Math.round((count / TOTAL_PLAYERS) * 100);
-      document.getElementById("waiting-count-text").textContent = `${count} / ${TOTAL_PLAYERS}`;
-      document.getElementById("waiting-progress-bar").style.width = `${percentage}%`;
-    }
-
     function hideAllStatusViews() {
       document.getElementById("status-intermission").classList.add("hidden");
-      document.getElementById("status-waiting").classList.add("hidden");
       document.getElementById("status-restricted").classList.add("hidden");
       document.getElementById("status-results").classList.add("hidden");
     }
