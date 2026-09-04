@@ -209,7 +209,7 @@
     const PLAYERS = ["Denny", "Trixie", "Jasmine", "Stephen", "Bella", "Dien", "Trinh", "Doan", "Hebe"];
 
     let QUESTIONS = [];
-    let currentVoter = sessionStorage.getItem("party_active_voter") || null; // Giữ session trong lúc đang mở tab
+    let currentVoter = sessionStorage.getItem("party_active_voter") || null;
     let submittedRounds = {};
     let activeRoundOnServer = 0;
     let renderedRoundIndex = -1;
@@ -220,12 +220,12 @@
       populateIdentityDropdown();
 
       loadQuestionsAndSync();
-      setInterval(syncVoterState, 1200); // Đội ngũ kiểm tra ngầm siêu tốc
+      setInterval(syncVoterState, 1500);
     };
 
     async function loadQuestionsAndSync() {
       try {
-        const res = await fetch(API_URL + "?action=getQuestions");
+        const res = await fetch(`${API_URL}?action=getQuestions&_t=${Date.now()}`);
         const data = await res.json();
         QUESTIONS = data.questions || [];
         activeRoundOnServer = parseInt(data.activeRound || 0, 10);
@@ -276,7 +276,8 @@
       if (!currentVoter) return;
 
       try {
-        const res = await fetch(`${API_URL}?action=getVoterState&voter=${encodeURIComponent(currentVoter)}`);
+        // Tham số &_t=Date.now() ép máy chủ hủy Cache và trả về trạng thái mới nhất ngay lập tức
+        const res = await fetch(`${API_URL}?action=getVoterState&voter=${encodeURIComponent(currentVoter)}&_t=${Date.now()}`);
         const data = await res.json();
         submittedRounds = data.submittedRounds || {};
         activeRoundOnServer = parseInt(data.activeRound || 0, 10);
@@ -293,9 +294,7 @@
         const currentQ = QUESTIONS[activeRoundOnServer];
         if (!currentQ) return;
 
-        // TỰ ĐỘNG CHUYỂN GIAO DIỆN KHI HOST BẤM PROCEED
         if (submittedRounds[currentQ.id]) {
-          // Nếu đã nộp bài vòng hiện tại -> Vô phòng chờ
           if (currentVoter === ADMIN_USER) {
             showScreen("step-status");
             hideAllStatusViews();
@@ -307,7 +306,6 @@
             document.getElementById("intermission-title").textContent = `Round ${activeRoundOnServer + 1} Submitted!`;
           }
         } else {
-          // Chưa nộp bài vòng mới của Host -> TỰ ĐỘNG MỞ NGAY MÀN HÌNH VOTE CHO NGƯỜI CHƠI!
           showScreen("step-vote");
           if (renderedRoundIndex !== activeRoundOnServer) {
             renderCurrentRoundQuestion();
@@ -463,7 +461,7 @@
 
     async function fetchHostResults() {
       try {
-        const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}`);
+        const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}&_t=${Date.now()}`);
         const data = await res.json();
 
         if (data.status === "UNLOCKED") {
