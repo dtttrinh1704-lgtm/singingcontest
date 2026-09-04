@@ -33,12 +33,15 @@
     }
     select option { background-color: #1a1528; color: #ffffff; }
     
+    /* Custom Checkbox Style */
     .custom-checkbox:checked + label {
       background: rgba(217, 70, 239, 0.25);
       border-color: #d946ef;
       color: #ffffff;
     }
-    .custom-checkbox:checked + label .check-icon { opacity: 1; }
+    .custom-checkbox:checked + label .check-icon { 
+      opacity: 1 !important; 
+    }
   </style>
 </head>
 <body class="p-4 flex flex-col items-center justify-center min-h-screen">
@@ -60,7 +63,7 @@
 
       <!-- RESET BUTTON (HOST TRINH ONLY) -->
       <button id="admin-reset-btn" onclick="confirmResetGame()" title="Reset Game for Everyone" class="px-3 py-1.5 rounded-full bg-red-500/20 hover:bg-red-500/40 border border-red-500/40 text-xs font-bold text-red-300 transition flex items-center gap-1.5 shadow-lg hidden">
-        <i class="fa-solid fa-rotate-right animate-spin-hover"></i>
+        <i class="fa-solid fa-rotate-right"></i>
         <span>Reset</span>
       </button>
     </div>
@@ -351,6 +354,9 @@
       const maxAllowed = (activeRoundOnServer < 2) ? 2 : 1;
 
       document.getElementById("round-badge-title").textContent = `Round ${activeRoundOnServer + 1} of ${QUESTIONS.length}`;
+      
+      const submitBtn = document.getElementById("btn-submit-round");
+      submitBtn.disabled = false;
       document.getElementById("btn-submit-text").textContent = `Submit Round ${activeRoundOnServer + 1} Vote`;
 
       const container = document.getElementById("single-question-card");
@@ -382,7 +388,7 @@
         const checkId = `check-${q.id}-${optIdx}`;
         const choiceDiv = document.createElement("div");
         choiceDiv.innerHTML = `
-          <input type="checkbox" id="${checkId}" name="${q.id}" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit('${q.id}', ${maxAllowed}, event)">
+          <input type="checkbox" id="${checkId}" name="question_option" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit(${maxAllowed}, event)">
           <label for="${checkId}" class="flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition">
             <span>${choice.label}</span>
             <i class="fa-solid fa-check text-xs opacity-0 check-icon transition-opacity"></i>
@@ -394,8 +400,8 @@
       container.appendChild(optionsContainer);
     }
 
-    function handleCheckboxLimit(questionId, maxAllowed, event) {
-      const checkedBoxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+    function handleCheckboxLimit(maxAllowed, event) {
+      const checkedBoxes = document.querySelectorAll('input[name="question_option"]:checked');
       if (checkedBoxes.length > maxAllowed) {
         alert(`You can only select a maximum of ${maxAllowed} option(s) for this question!`);
         event.target.checked = false;
@@ -405,7 +411,7 @@
     async function handleSubmitRound() {
       const q = QUESTIONS[activeRoundOnServer];
       const targetLimit = (activeRoundOnServer < 2) ? 2 : 1;
-      const checked = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`)).map(cb => cb.value);
+      const checked = Array.from(document.querySelectorAll('input[name="question_option"]:checked')).map(cb => cb.value);
 
       if (checked.length !== targetLimit) {
         alert(`Please select EXACTLY ${targetLimit} option(s) for Round ${activeRoundOnServer + 1}!`);
@@ -434,10 +440,12 @@
         } else {
           alert("Submission failed!");
           btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">Submit Round Vote</span>`;
         }
       } catch (e) {
         alert("Network error.");
         btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">Submit Round Vote</span>`;
       }
     }
 
@@ -535,7 +543,6 @@
       });
     }
 
-    // NÚT RESET GAME DÀNH CHO HOST
     async function confirmResetGame() {
       if (!confirm("⚠️ Host Trinh ơi, bạn có chắc chắn muốn RESET TOÀN BỘ GAME không?\n\nHành động này sẽ xóa hết tất cả các phiếu đã vote và đưa cuộc thi quay về Vòng 1!")) {
         return;
