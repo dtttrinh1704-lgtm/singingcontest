@@ -33,14 +33,14 @@
     }
     select option { background-color: #1a1528; color: #ffffff; }
 
-    /* Custom Clickable Option Style */
-    .option-btn.selected {
+    /* Custom Option Card Selected State */
+    .option-card.selected {
       background: rgba(217, 70, 239, 0.25) !important;
       border-color: #d946ef !important;
       color: #ffffff !important;
-      box-shadow: 0 0 12px rgba(217, 70, 239, 0.3);
+      box-shadow: 0 0 12px rgba(217, 70, 239, 0.35);
     }
-    .option-btn.selected .check-icon {
+    .option-card.selected .check-icon {
       opacity: 1 !important;
     }
   </style>
@@ -389,19 +389,20 @@
       optionsContainer.className = "space-y-2 pt-2";
 
       availableChoices.forEach((choice) => {
-        const optionBtn = document.createElement("div");
-        optionBtn.className = "option-btn flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition select-none";
+        const optionCard = document.createElement("div");
+        optionCard.className = "option-card flex items-center justify-between p-3.5 rounded-xl border border-white/10 glass-input text-xs font-medium cursor-pointer transition select-none hover:border-fuchsia-400/50";
 
-        optionBtn.innerHTML = `
+        optionCard.innerHTML = `
           <span>${choice.label}</span>
           <i class="fa-solid fa-check text-xs opacity-0 check-icon text-fuchsia-400 transition-opacity"></i>
         `;
 
-        optionBtn.onclick = function() {
-          toggleOptionSelection(optionBtn, choice.label, maxAllowed);
+        // Lắng nghe sự kiện click trực tiếp
+        optionCard.onclick = function() {
+          toggleOptionSelection(optionCard, choice.label, maxAllowed);
         };
 
-        optionsContainer.appendChild(optionBtn);
+        optionsContainer.appendChild(optionCard);
       });
 
       container.appendChild(optionsContainer);
@@ -581,9 +582,11 @@
       }
     }
 
+    // XÓA SẠCH BỘ NHỚ LƯU TÊN CŨ KHI BẤM "SUBMIT ANOTHER RESPONSE"
     function resetCurrentSession() {
       currentVoter = null;
       localStorage.removeItem("party_voter");
+      localStorage.clear();
       showScreen("step-identity");
       populateIdentityDropdown();
     }
