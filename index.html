@@ -4,9 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>On VN Sustainability Team Singing Contest</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -23,100 +27,69 @@
       border: 1px solid rgba(255, 255, 255, 0.15);
     }
     .glass-input {
-      background: rgba(15, 12, 29, 0.75);
+      background: rgba(15, 12, 29, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
     }
     .glass-input:focus {
       border-color: #d946ef;
       outline: none;
-      box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.35);
+      box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.3);
     }
-    select option { 
-      background-color: #1a1528; 
-      color: #ffffff; 
-    }
+    select option { background-color: #1a1528; color: #ffffff; }
     
+    /* Custom Checkbox Style */
     .custom-checkbox:checked + label {
       background: rgba(217, 70, 239, 0.25);
       border-color: #d946ef;
       color: #ffffff;
-      box-shadow: 0 0 16px rgba(217, 70, 239, 0.25);
     }
     .custom-checkbox:checked + label .check-icon {
-      opacity: 1 !important;
-      transform: scale(1.1);
-    }
-    .step-pill-active {
-      background: linear-gradient(135deg, #d946ef, #ec4899);
-      color: white;
-      box-shadow: 0 0 12px rgba(217, 70, 239, 0.5);
+      opacity: 1;
     }
   </style>
 </head>
-<body class="p-4 pb-28 flex flex-col items-center justify-center min-h-screen relative select-none">
+<body class="p-4 flex flex-col items-center justify-center min-h-screen">
 
-  <header class="w-full max-w-md flex justify-between items-center mb-3 px-1">
-    <div class="flex items-center space-x-2.5">
-      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 via-pink-500 to-amber-400 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
-        <i class="fa-solid fa-microphone-lines text-white text-base"></i>
+  <!-- HEADER -->
+  <header class="w-full max-w-md flex justify-between items-center mb-4 px-1">
+    <div class="flex items-center space-x-2">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-fuchsia-600 to-amber-400 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
+        <i class="fa-solid fa-microphone-lines text-white text-sm"></i>
       </div>
-      <div>
-        <span class="font-bold text-sm tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-300 via-pink-200 to-amber-200 block leading-tight">
-          On VN Sustainability
-        </span>
-        <div id="role-badge" class="mt-0.5">
-          <!-- Dynamic Role Badge -->
-        </div>
-      </div>
+      <span class="font-bold text-sm sm:text-base tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-300 via-pink-200 to-amber-200">On VN Sustainability</span>
     </div>
 
     <div class="flex items-center space-x-2">
-      <button onclick="toggleQRModal()" class="px-3 py-1.5 rounded-full glass-card hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
+      <button onclick="toggleQRModal()" class="px-3 py-1.5 rounded-full glass-card hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition">
         <i class="fa-solid fa-qrcode text-fuchsia-400"></i>
-        <span>QR</span>
+        <span>Share QR</span>
       </button>
-      <button id="admin-reset-btn" onclick="openResetModal()" title="Reset Session" class="px-3 py-1.5 rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1 active:scale-95">
+      <button id="admin-reset-btn" onclick="confirmResetGame()" title="Reset Game for Everyone" class="px-2.5 py-1.5 rounded-full glass-card hover:bg-red-500/20 text-xs text-slate-400 hover:text-red-300 transition flex items-center gap-1 hidden">
         <i class="fa-solid fa-rotate-right"></i>
         <span>Reset</span>
       </button>
     </div>
   </header>
 
-  <div class="w-full max-w-md mb-3 px-1">
-    <div class="glass-card rounded-xl p-2.5 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-1">
-          <i class="fa-solid fa-layer-group text-fuchsia-400 text-xs"></i> Round:
-        </span>
-        <div class="flex gap-1" id="round-stepper-dots">
-          <span id="step-dot-1" class="px-2.5 py-1 rounded-lg text-[11px] font-bold step-pill-active transition-all">1. Solo</span>
-          <span id="step-dot-2" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/5 text-slate-400 border border-white/5 transition-all">2. Duo</span>
-          <span id="step-dot-3" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/5 text-slate-400 border border-white/5 transition-all">3. Group</span>
-        </div>
-      </div>
-      <span id="live-status-pill" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold flex items-center gap-1">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live
-      </span>
-    </div>
-  </div>
-
+  <!-- MAIN CONTAINER -->
   <main class="w-full max-w-md">
 
-    <section id="step-identity" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300 hidden">
+    <!-- STEP 1: IDENTITY -->
+    <section id="step-identity" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300">
       <div class="text-center mb-6">
-        <div class="inline-flex p-3.5 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/20 mb-3 text-fuchsia-400 text-2xl shadow-inner">
+        <div class="inline-flex p-3 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/20 mb-3 text-fuchsia-400 text-2xl">
           <i class="fa-solid fa-trophy"></i>
         </div>
-        <h1 class="text-xl font-black text-white tracking-wide uppercase">Singing Contest 2026</h1>
-        <p class="text-xs text-slate-300 mt-1">Select your name from the 9 contestants to begin.</p>
+        <h1 class="text-xl font-black text-white uppercase tracking-wider">Singing Contest</h1>
+        <p class="text-xs text-slate-400 mt-1">Select your name to access the voting ballot.</p>
       </div>
 
       <div class="space-y-4">
         <div>
-          <label for="user-select" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Select Your Name</label>
+          <label for="user-select" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Your Name</label>
           <div class="relative">
-            <select id="user-select" class="glass-input w-full px-4 py-3.5 rounded-xl appearance-none pr-10 text-sm">
+            <select id="user-select" class="glass-input w-full px-4 py-3.5 rounded-xl appearance-none pr-10 text-base">
               <option value="">-- Choose your name --</option>
             </select>
             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
@@ -124,503 +97,359 @@
         </div>
 
         <button id="btn-start" onclick="handleStartVote()" class="w-full mt-2 py-3.5 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 active:scale-[0.98] rounded-xl font-bold text-white shadow-lg shadow-fuchsia-600/30 transition flex items-center justify-center gap-2">
-          <span>Enter Current Round</span>
-          <i class="fa-solid fa-arrow-right text-xs"></i>
+          <span>Start Voting</span>
+          <i class="fa-solid fa-arrow-right text-sm"></i>
         </button>
+      </div>
+
+      <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Room Status
+        </span>
+        <span id="header-vote-progress" class="font-semibold text-slate-200">Checking...</span>
       </div>
     </section>
 
-    <section id="step-vote" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300">
-      <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+    <!-- STEP 2: VOTING FORM -->
+    <section id="step-vote" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
         <div>
-          <div class="flex items-center gap-1.5">
-            <span id="vote-round-badge" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 uppercase">
-              Round 1 of 3
-            </span>
-            <span class="text-[11px] text-slate-400">• In Progress</span>
-          </div>
-          <h2 id="vote-greeting" class="text-base font-bold text-white mt-1">Hello, Contestant!</h2>
+          <span class="text-xs font-semibold text-fuchsia-400 uppercase tracking-wider">Contest Ballot</span>
+          <h2 id="vote-greeting" class="text-xl font-bold text-white">Hello, Player!</h2>
         </div>
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
-          <i class="fa-solid fa-shield-halved text-[9px]"></i> Self-vote locked
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 flex items-center gap-1">
+          <i class="fa-solid fa-shield-halved text-[10px]"></i> Self-vote locked
         </span>
       </div>
 
-      <!-- Single Question Container for Current Round -->
-      <div id="single-round-question-container" class="space-y-4">
-        <!-- Dynamic Single Question rendered here -->
-      </div>
+      <form id="voting-questions-container" class="space-y-6" onsubmit="event.preventDefault();">
+        <!-- Dynamic Questions from Google Sheet -->
+      </form>
 
       <div class="mt-6 pt-5 border-t border-white/10">
-        <button id="btn-submit-round" onclick="handleSubmitCurrentRound()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] rounded-xl font-bold text-white shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-paper-plane text-xs"></i>
-          <span id="btn-submit-round-text">Submit Round 1 Vote</span>
+        <button id="btn-submit" onclick="handleSubmitVote()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] rounded-xl font-bold text-white shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-check"></i>
+          <span>Submit Ballot</span>
         </button>
       </div>
     </section>
 
-    <section id="step-intermission" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300 text-center">
-      <div class="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-        <div class="absolute inset-0 rounded-full border-4 border-emerald-500/20 border-t-emerald-400 animate-spin"></div>
-        <i class="fa-solid fa-circle-check text-3xl text-emerald-400"></i>
-      </div>
-
-      <span id="intermission-badge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wider inline-block mb-2">
-        Round 1 Submitted
-      </span>
-
-      <h2 class="text-xl font-black text-white" id="intermission-title">Vote Recorded!</h2>
-      <p class="text-xs text-slate-300 mt-1.5 max-w-xs mx-auto" id="intermission-desc">
-        Enjoy the upcoming duet performances! Voting for Round 2 will open as soon as performances conclude.
-      </p>
-
-      <div class="mt-6 bg-slate-900/60 rounded-xl p-4 border border-white/10 text-left">
-        <div class="flex justify-between items-center text-xs font-semibold mb-2">
-          <span class="text-slate-300">Round 1 Submissions</span>
-          <span id="intermission-count-text" class="text-fuchsia-400 font-mono">9 / 9 Voted</span>
-        </div>
-        <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden p-0.5">
-          <div id="intermission-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" style="width: 100%;"></div>
-        </div>
-        <p class="text-[10px] text-slate-400 mt-2 text-center flex items-center justify-center gap-1">
-          <i class="fa-solid fa-hourglass-half text-amber-400 animate-spin"></i>
-          Waiting for Host to unlock next stage...
-        </p>
-      </div>
-
-      <!-- Action Button to enter next round (active when Host triggers) -->
-      <button id="btn-next-round" onclick="advanceToNextRoundByPlayer()" class="w-full mt-5 py-3.5 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 active:scale-[0.98] rounded-xl font-bold text-white shadow-lg shadow-fuchsia-600/30 transition flex items-center justify-center gap-2">
-        <span>Proceed to Next Round</span>
-        <i class="fa-solid fa-arrow-right text-xs"></i>
-      </button>
-    </section>
-
-    <section id="step-results" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
+    <!-- STEP 3: STATUS / RESULTS -->
+    <section id="step-status" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
       
-      <!-- RESTRICTED VIEW FOR REGULAR CONTESTANTS -->
-      <div id="results-restricted-view" class="text-center py-6 space-y-4 hidden">
-        <div class="inline-flex p-5 bg-gradient-to-tr from-fuchsia-500/20 to-pink-500/20 rounded-3xl border border-fuchsia-500/30 text-fuchsia-400 text-4xl shadow-xl shadow-fuchsia-500/10">
+      <!-- WAITING STATE -->
+      <div id="status-waiting" class="text-center py-4">
+        <div class="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+          <div class="absolute inset-0 rounded-full border-4 border-fuchsia-500/20 border-t-fuchsia-500 animate-spin"></div>
+          <i class="fa-solid fa-envelope-open-text text-2xl text-fuchsia-400"></i>
+        </div>
+
+        <h2 class="text-2xl font-black text-white">Ballot Submitted!</h2>
+        <p class="text-sm text-slate-400 mt-1 max-w-xs mx-auto">Waiting for all 9 contestants to complete voting...</p>
+
+        <div class="mt-6 bg-slate-900/60 rounded-xl p-4 border border-white/10">
+          <div class="flex justify-between items-center text-xs font-semibold mb-2">
+            <span class="text-slate-300">Live Progress</span>
+            <span id="waiting-count-text" class="text-fuchsia-400">0 / 9</span>
+          </div>
+          <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden p-0.5">
+            <div id="waiting-progress-bar" class="h-full bg-gradient-to-r from-fuchsia-500 to-pink-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESTRICTED RESULTS STATE (FOR NON-HOST PLAYERS) -->
+      <div id="status-restricted" class="hidden text-center py-6 space-y-3">
+        <div class="inline-flex p-4 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/30 text-fuchsia-400 text-3xl">
           <i class="fa-solid fa-lock"></i>
         </div>
-        <div>
-          <h2 class="text-2xl font-black text-white">All 3 Rounds Finished!</h2>
-          <p class="text-xs text-emerald-400 font-semibold mt-1 flex items-center justify-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Voting completed across all 9 contestants
-          </p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-white/10 text-xs text-slate-300 leading-relaxed max-w-xs mx-auto text-center">
-          🔒 All 3 rounds of voting have concluded. The grand winner results are strictly revealed to the <strong class="text-amber-300 font-bold">Host</strong>! Stay tuned and wait for the award announcement.
-        </div>
+        <h2 class="text-2xl font-black text-white">Voting Complete!</h2>
+        <p class="text-sm text-slate-300 max-w-xs mx-auto">All votes have been tallied. The final results are strictly revealed to the <strong class="text-amber-300">Host</strong>!</p>
       </div>
 
-      <!-- HOST EXCLUSIVE UNLOCKED PODIUM RESULTS -->
-      <div id="results-host-view" class="hidden">
-        <div class="text-center mb-5 relative">
-          <div class="inline-flex p-3 bg-gradient-to-tr from-amber-500/20 to-yellow-400/20 rounded-2xl border border-amber-500/40 mb-2 text-amber-400 text-3xl shadow-lg shadow-amber-500/20">
-            <i class="fa-solid fa-crown"></i>
+      <!-- UNLOCKED RESULTS STATE (ONLY FOR HOST - TRINH) -->
+      <div id="status-results" class="hidden">
+        <div class="text-center mb-6">
+          <div class="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/30 mb-2 text-amber-400 text-3xl">
+            <i class="fa-solid fa-trophy"></i>
           </div>
-          <h2 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-orange-300 uppercase tracking-wide">
-            Grand Winner Board!
-          </h2>
-          <p class="text-xs text-slate-300 mt-1">Hello <strong class="text-amber-300 font-bold">Host (Trinh)</strong>, here is the round-by-round tally:</p>
+          <h2 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-orange-300">Contest Results!</h2>
+          <p class="text-xs text-slate-400 mt-1">Hello Host, here are the official 9-player results!</p>
         </div>
 
-        <!-- Filter tabs for Host to review by round or all -->
-        <div class="flex gap-1 mb-4 bg-slate-900/80 p-1 rounded-xl border border-white/10">
-          <button onclick="renderHostResultCategory('all')" id="tab-res-all" class="flex-1 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition">All 3</button>
-          <button onclick="renderHostResultCategory('q1')" id="tab-res-q1" class="flex-1 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:bg-white/10 transition">R1 Solo</button>
-          <button onclick="renderHostResultCategory('q2')" id="tab-res-q2" class="flex-1 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:bg-white/10 transition">R2 Duo</button>
-          <button onclick="renderHostResultCategory('q3')" id="tab-res-q3" class="flex-1 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:bg-white/10 transition">R3 Group</button>
-        </div>
-
-        <div id="results-display-container" class="space-y-5">
-          <!-- Dynamic Winner Cards Generated via JavaScript -->
-        </div>
-
-        <div class="mt-6 pt-5 border-t border-white/10 flex gap-2">
-          <button onclick="triggerConfetti()" class="w-1/2 py-3 bg-white/10 hover:bg-white/20 active:scale-[0.98] rounded-xl text-xs font-bold text-fuchsia-300 border border-fuchsia-500/30 transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Cheer 🎉</span>
-          </button>
-          <button onclick="openResetModal()" class="w-1/2 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 active:scale-[0.98] rounded-xl text-xs font-bold text-white shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-rotate-right"></i>
-            <span>New Contest</span>
-          </button>
-        </div>
+        <div id="results-display-container" class="space-y-6"></div>
       </div>
 
     </section>
 
   </main>
 
-  <aside class="fixed bottom-2.5 inset-x-3 max-w-md mx-auto z-40">
-    <div class="glass-card rounded-2xl p-2.5 flex flex-col gap-2 border border-amber-500/40 shadow-2xl bg-slate-950/95 backdrop-blur-xl">
-      <div class="flex items-center justify-between px-1">
-        <span class="text-[11px] font-bold text-amber-300 flex items-center gap-1">
-          <i class="fa-solid fa-sliders text-xs text-amber-400"></i> Host Stage Switcher:
-        </span>
-        <span class="text-[10px] text-slate-400">Jump to any round demo</span>
-      </div>
-      <div class="grid grid-cols-5 gap-1">
-        <button id="sim-r1" onclick="simulateRoundFlow(1, 'vote')" class="py-1.5 rounded-lg bg-amber-500 text-slate-950 text-[10px] font-bold transition text-center shadow">
-          R1 Solo
-        </button>
-        <button id="sim-r2" onclick="simulateRoundFlow(2, 'vote')" class="py-1.5 rounded-lg bg-white/10 text-slate-200 text-[10px] font-semibold hover:bg-white/20 transition text-center">
-          R2 Duo
-        </button>
-        <button id="sim-r3" onclick="simulateRoundFlow(3, 'vote')" class="py-1.5 rounded-lg bg-white/10 text-slate-200 text-[10px] font-semibold hover:bg-white/20 transition text-center">
-          R3 Group
-        </button>
-        <button id="sim-wait" onclick="simulateRoundFlow(currentRoundIndex, 'intermission')" class="py-1.5 rounded-lg bg-white/10 text-slate-200 text-[10px] font-semibold hover:bg-white/20 transition text-center">
-          Waiting
-        </button>
-        <button id="sim-host" onclick="simulateRoundFlow(4, 'host_results')" class="py-1.5 rounded-lg bg-gradient-to-r from-amber-500/40 to-yellow-500/40 border border-amber-400/40 text-amber-200 text-[10px] font-bold hover:bg-amber-400/30 transition text-center">
-          Host Podium
-        </button>
-      </div>
-    </div>
-  </aside>
-
+  <!-- QR MODAL -->
   <div id="qr-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-card rounded-2xl p-6 max-w-xs w-full text-center relative border border-white/20 shadow-2xl">
       <button onclick="toggleQRModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <h3 class="text-base font-bold text-white mb-1">Scan to Join Contest</h3>
-      <p class="text-xs text-slate-300 mb-4">On VN Sustainability Team Singing Contest</p>
+      <h3 class="text-lg font-bold text-white mb-1">Scan to Join Vote</h3>
+      <p class="text-xs text-slate-300 mb-4">On VN Sustainability Team Contest</p>
 
       <div class="p-3 bg-white rounded-xl inline-block shadow-inner mb-3">
         <div id="qrcode-container"></div>
       </div>
 
-      <p class="text-[10px] text-slate-400 break-all px-2" id="current-url-text"></p>
-    </div>
-  </div>
-
-  <!-- IN-APP RESET CONFIRMATION MODAL (No window.confirm) -->
-  <div id="reset-confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card rounded-2xl p-5 max-w-xs w-full text-center relative border border-rose-500/30 shadow-2xl space-y-3">
-      <div class="w-12 h-12 mx-auto rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-      </div>
-      <h3 class="text-base font-bold text-white">Reset Contest Session?</h3>
-      <p class="text-xs text-slate-300">This will clear all 3 rounds of voting and return all 9 contestants back to Round 1.</p>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeResetModal()" class="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-slate-300">Cancel</button>
-        <button onclick="executeResetSession()" class="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white shadow-lg shadow-rose-600/30">Yes, Reset</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOAST NOTIFICATION (No window.alert) -->
-  <div id="app-toast" class="fixed top-5 z-50 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none max-w-xs w-full">
-    <div class="p-3.5 rounded-xl bg-slate-900/95 border border-fuchsia-500/50 shadow-2xl text-xs flex items-center gap-2.5 text-white">
-      <i id="toast-icon" class="fa-solid fa-circle-exclamation text-fuchsia-400 text-sm"></i>
-      <span id="toast-message" class="font-medium">Notification message</span>
+      <p class="text-[11px] text-slate-400 break-all px-2" id="current-url-text"></p>
     </div>
   </div>
 
   <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzXLzCATb-D9tO_LH-8bJV4o1OS1RTk7CGxjX1wE-nqVXi7YJVZ2aWiqqLQadEteiHKlA/exec";
     const TOTAL_PLAYERS = 9;
     const ADMIN_USER = "Trinh";
     const PLAYERS = ["Denny", "Trixie", "Jasmine", "Stephen", "Bella", "Dien", "Trinh", "Doan", "Hebe"];
 
-    // 3 Distinct Rounds in chronological stage order
-    const ROUNDS = [
-      {
-        roundNumber: 1,
-        id: "q1",
-        stageName: "Solo Stage",
-        title: "Who is the best solo singer?",
-        description: "Vote for your 2 favorite soloists (excluding yourself)",
-        type: "solo",
-        maxChoices: 2,
-        badgeText: "Round 1 of 3: Solo",
-        nextDesc: "Enjoy the upcoming duet performances! Voting for Round 2 will open as soon as duets conclude."
-      },
-      {
-        roundNumber: 2,
-        id: "q2",
-        stageName: "Duet Stage",
-        title: "Who is the best duo?",
-        description: "Vote for your 2 favorite duet performances",
-        type: "custom",
-        maxChoices: 2,
-        badgeText: "Round 2 of 3: Duet",
-        nextDesc: "Cheer for the upcoming group acts! Voting for Round 3 will open once all groups finish singing.",
-        options: [
-          { label: "Mưa Đá (Denny & Trixie)", members: ["Denny", "Trixie"] },
-          { label: "Thuỷ Triều (Doan & Dien)", members: ["Doan", "Dien"] },
-          { label: "Ánh Nắng Của Anh (Stephen & Bella)", members: ["Stephen", "Bella"] },
-          { label: "Cơn Mưa Tình Yêu (Jasmine & Hebe)", members: ["Jasmine", "Hebe"] }
-        ]
-      },
-      {
-        roundNumber: 3,
-        id: "q3",
-        stageName: "Group Stage",
-        title: "Who is the best group?",
-        description: "Vote for ONLY 1 best group performance",
-        type: "custom",
-        maxChoices: 1,
-        badgeText: "Round 3 of 3: Group",
-        nextDesc: "All 3 rounds are now complete! The Host is calculating final awards.",
-        options: [
-          { label: "Group A - Ánh Nắng Tình Yêu (Denny, Stephen, Bella)", members: ["Denny", "Stephen", "Bella"] },
-          { label: "Group B - Thuỷ Triều Đêm (Doan, Dien, Jasmine)", members: ["Doan", "Dien", "Jasmine"] },
-          { label: "Group C - Mưa Hạ (Trixie, Hebe, Trinh)", members: ["Trixie", "Hebe", "Trinh"] }
-        ]
-      }
-    ];
-
-    // Mock completed tallies across all 3 rounds
-    const MOCK_RESULTS = {
-      "q1": {
-        "Stephen": 6,
-        "Bella": 4,
-        "Denny": 3,
-        "Jasmine": 2,
-        "Dien": 2,
-        "Doan": 1
-      },
-      "q2": {
-        "Mưa Đá (Denny & Trixie)": 7,
-        "Thuỷ Triều (Doan & Dien)": 5,
-        "Ánh Nắng Của Anh (Stephen & Bella)": 4,
-        "Cơn Mưa Tình Yêu (Jasmine & Hebe)": 2
-      },
-      "q3": {
-        "Group A - Ánh Nắng Tình Yêu (Denny, Stephen, Bella)": 5,
-        "Group B - Thuỷ Triều Đêm (Doan, Dien, Jasmine)": 3,
-        "Group C - Mưa Hạ (Trixie, Hebe, Trinh)": 1
-      }
-    };
-
-    let currentVoter = "Denny";
-    let currentRoundIndex = 1; // 1, 2, or 3
-    let playerVotes = { q1: [], q2: [], q3: [] };
+    let QUESTIONS = [];
+    let currentVoter = localStorage.getItem("party_current_voter") || null;
+    let votedUsersList = [];
 
     window.onload = function() {
       initQR();
-      populateDropdown();
-      // Start in Round 1 Ballot view for Denny to illustrate single-question flow
-      simulateRoundFlow(1, 'vote');
+      loadQuestionsAndSync();
+      setInterval(syncVotedUsers, 3500);
     };
 
-    function populateDropdown() {
-      const select = document.getElementById("user-select");
-      select.innerHTML = '<option value="">-- Choose your name --</option>';
-      PLAYERS.forEach(player => {
-        select.add(new Option(player, player));
-      });
-    }
-
-    function simulateRoundFlow(roundNum, screenState) {
-      currentRoundIndex = roundNum;
-      updateStepperUI(roundNum);
-      updateSimButtons(roundNum, screenState);
-
-      const badge = document.getElementById("role-badge");
-      const adminBtn = document.getElementById("admin-reset-btn");
-
-      if (screenState === 'host_results') {
-        currentVoter = ADMIN_USER;
-        badge.innerHTML = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold inline-flex items-center gap-1"><i class="fa-solid fa-crown text-[9px]"></i> Host View (Trinh)</span>`;
-        adminBtn.classList.remove("hidden");
-
-        hideAllScreens();
-        document.getElementById("step-results").classList.remove("hidden");
-        document.getElementById("results-restricted-view").classList.add("hidden");
-        document.getElementById("results-host-view").classList.remove("hidden");
-        renderHostResultCategory('all');
-        triggerConfetti();
-
-      } else if (screenState === 'intermission') {
-        currentVoter = "Denny";
-        badge.innerHTML = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 font-semibold inline-flex items-center gap-1"><i class="fa-solid fa-user text-[9px]"></i> Contestant (Denny)</span>`;
-        adminBtn.classList.add("hidden");
-
-        const roundConfig = ROUNDS[Math.min(roundNum - 1, 2)];
-        document.getElementById("intermission-badge").textContent = `${roundConfig.stageName} Submitted`;
-        document.getElementById("intermission-title").textContent = `Round ${roundConfig.roundNumber} Submitted!`;
-        document.getElementById("intermission-desc").textContent = roundConfig.nextDesc;
-
-        hideAllScreens();
-        document.getElementById("step-intermission").classList.remove("hidden");
-
-      } else if (screenState === 'vote') {
-        currentVoter = "Denny";
-        badge.innerHTML = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 font-semibold inline-flex items-center gap-1"><i class="fa-solid fa-user text-[9px]"></i> Contestant (Denny)</span>`;
-        adminBtn.classList.add("hidden");
-
-        hideAllScreens();
-        document.getElementById("step-vote").classList.remove("hidden");
-        renderSingleRoundQuestion(roundNum);
+    async function loadQuestionsAndSync() {
+      try {
+        const res = await fetch(API_URL + "?action=getQuestions");
+        const data = await res.json();
+        QUESTIONS = data.questions || [];
+        parseQuestionOptions();
+        await syncVotedUsers();
+      } catch (err) {
+        console.error("Error loading questions from Sheet:", err);
       }
     }
 
-    function updateStepperUI(roundNum) {
-      [1, 2, 3].forEach(idx => {
-        const dot = document.getElementById(`step-dot-${idx}`);
-        if (!dot) return;
-        if (idx === roundNum) {
-          dot.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold step-pill-active transition-all";
-        } else if (idx < roundNum) {
-          dot.className = "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all";
-          dot.innerHTML = `${idx}. ✓`;
-        } else {
-          dot.className = "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/5 text-slate-400 border border-white/5 transition-all";
-          const names = ["Solo", "Duo", "Group"];
-          dot.innerHTML = `${idx}. ${names[idx - 1]}`;
+    function parseQuestionOptions() {
+      QUESTIONS.forEach(q => {
+        q.parsedOptions = [];
+        if (q.type === 'custom' && q.rawOptions) {
+          const parts = q.rawOptions.split('|');
+          parts.forEach(part => {
+            part = part.trim();
+            const match = part.match(/^(.*?)\s*\[(.*?)\]$/);
+            if (match) {
+              const label = match[1].trim();
+              const members = match[2].split(',').map(m => m.trim());
+              q.parsedOptions.push({ label, members });
+            } else if (part) {
+              q.parsedOptions.push({ label: part, members: [] });
+            }
+          });
         }
       });
     }
 
-    function updateSimButtons(roundNum, screenState) {
-      ['sim-r1', 'sim-r2', 'sim-r3', 'sim-wait', 'sim-host'].forEach(btnId => {
-        const el = document.getElementById(btnId);
-        if (!el) return;
-        el.className = "py-1.5 rounded-lg text-[10px] font-semibold transition text-center " +
-          "bg-white/10 text-slate-200 hover:bg-white/20";
-      });
+    async function syncVotedUsers() {
+      try {
+        const res = await fetch(API_URL + "?action=getVotedUsers");
+        const data = await res.json();
+        votedUsersList = data.votedUsers || [];
 
-      if (screenState === 'host_results') {
-        document.getElementById('sim-host').className = "py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold transition text-center shadow";
-      } else if (screenState === 'intermission') {
-        document.getElementById('sim-wait').className = "py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-bold transition text-center shadow";
-      } else if (roundNum === 1) {
-        document.getElementById('sim-r1').className = "py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold transition text-center shadow";
-      } else if (roundNum === 2) {
-        document.getElementById('sim-r2').className = "py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold transition text-center shadow";
-      } else if (roundNum === 3) {
-        document.getElementById('sim-r3').className = "py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold transition text-center shadow";
+        updateHeaderProgress(votedUsersList.length);
+        populateIdentityDropdown();
+
+        if (currentVoter === ADMIN_USER) {
+          document.getElementById("admin-reset-btn").classList.remove("hidden");
+        } else {
+          document.getElementById("admin-reset-btn").classList.add("hidden");
+        }
+
+        if (votedUsersList.length >= TOTAL_PLAYERS) {
+          fetchAndShowResults();
+        } else if (currentVoter && votedUsersList.includes(currentVoter)) {
+          showScreen("step-status");
+          document.getElementById("status-waiting").classList.remove("hidden");
+          document.getElementById("status-results").classList.add("hidden");
+          document.getElementById("status-restricted").classList.add("hidden");
+          updateWaitingProgress(votedUsersList.length);
+        } else if (!currentVoter) {
+          showScreen("step-identity");
+        }
+      } catch (err) {
+        console.error("Sync error:", err);
       }
     }
 
-    function renderSingleRoundQuestion(roundNum) {
-      const roundConfig = ROUNDS[roundNum - 1];
-      if (!roundConfig) return;
+    function populateIdentityDropdown() {
+      const select = document.getElementById("user-select");
+      const currentSelected = select.value;
+      select.innerHTML = '<option value="">-- Choose your name --</option>';
 
-      document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
-      document.getElementById("vote-round-badge").textContent = roundConfig.badgeText;
-      document.getElementById("btn-submit-round-text").textContent = `Submit ${roundConfig.stageName} Vote`;
-
-      const container = document.getElementById("single-round-question-container");
-      container.innerHTML = "";
-
-      const qCard = document.createElement("div");
-      qCard.className = "bg-white/5 p-4 rounded-xl border border-white/10 space-y-3";
-
-      const limitLabel = roundConfig.maxChoices === 1 
-        ? "Select EXACTLY 1 option below:" 
-        : `Select EXACTLY ${roundConfig.maxChoices} options below:`;
-
-      qCard.innerHTML = `
-        <div class="flex items-start gap-2.5 mb-1">
-          <div class="mt-0.5 p-2 rounded-lg bg-fuchsia-500/20 text-fuchsia-400 text-xs">
-            <i class="fa-solid fa-microphone-lines"></i>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-white">${roundConfig.title}</h3>
-            <p class="text-[11px] text-fuchsia-300 italic">${limitLabel}</p>
-          </div>
-        </div>
-      `;
-
-      let availableChoices = [];
-      if (roundConfig.type === "solo") {
-        // Rule: Exclude the voter's own name
-        availableChoices = PLAYERS.filter(name => name !== currentVoter).map(name => ({ label: name }));
-      } else if (roundConfig.type === "custom") {
-        // Rule: Exclude duet/group options featuring current voter
-        availableChoices = roundConfig.options.filter(opt => !opt.members.includes(currentVoter));
-      }
-
-      const optionsContainer = document.createElement("div");
-      optionsContainer.className = "space-y-2 pt-1";
-
-      availableChoices.forEach((choice, optIdx) => {
-        const checkId = `check-${roundConfig.id}-${optIdx}`;
-        const choiceDiv = document.createElement("div");
-        choiceDiv.innerHTML = `
-          <input type="checkbox" id="${checkId}" name="${roundConfig.id}" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit('${roundConfig.id}', ${roundConfig.maxChoices}, event)">
-          <label for="${checkId}" class="flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition">
-            <span>${choice.label}</span>
-            <i class="fa-solid fa-check text-xs text-fuchsia-400 opacity-0 check-icon transition-all duration-200"></i>
-          </label>
-        `;
-        optionsContainer.appendChild(choiceDiv);
+      PLAYERS.forEach(player => {
+        const option = document.createElement("option");
+        option.value = player;
+        const hasVoted = votedUsersList.includes(player);
+        option.textContent = hasVoted ? `${player} (✓ Voted)` : player;
+        option.disabled = hasVoted;
+        select.appendChild(option);
       });
 
-      qCard.appendChild(optionsContainer);
-      container.appendChild(qCard);
+      if (currentSelected) select.value = currentSelected;
+    }
+
+    function handleStartVote() {
+      const select = document.getElementById("user-select");
+      const selectedName = select.value;
+
+      if (!selectedName) {
+        select.classList.add("ring-2", "ring-rose-500");
+        setTimeout(() => select.classList.remove("ring-2", "ring-rose-500"), 1000);
+        return;
+      }
+
+      currentVoter = selectedName;
+      localStorage.setItem("party_current_voter", currentVoter);
+      
+      showScreen("step-vote");
+      renderVotingForm();
+    }
+
+    function renderVotingForm() {
+      document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
+      const container = document.getElementById("voting-questions-container");
+      container.innerHTML = "";
+
+      QUESTIONS.forEach((q, index) => {
+        const qCard = document.createElement("div");
+        qCard.className = "bg-white/5 p-4 rounded-xl border border-white/10 space-y-3";
+
+        // Cấu hình: Câu 1 và 2 chọn 2 bài/người. Câu 3 chọn 1 bài/nhóm.
+        const maxAllowed = (index < 2) ? 2 : 1;
+
+        qCard.innerHTML = `
+          <div class="flex items-start gap-2.5 mb-1">
+            <div class="mt-0.5 p-2 rounded-lg bg-fuchsia-500/20 text-fuchsia-400 text-xs">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white">${index + 1}. ${q.title}</h3>
+              <p class="text-[11px] text-fuchsia-300 italic">
+                ${maxAllowed === 2 ? 'Select EXACTLY 2 options below:' : 'Select EXACTLY 1 option below:'}
+              </p>
+            </div>
+          </div>
+        `;
+
+        let availableChoices = [];
+        if (q.type === "solo") {
+          availableChoices = PLAYERS.filter(name => name !== currentVoter).map(name => ({ label: name }));
+        } else if (q.type === "custom") {
+          availableChoices = q.parsedOptions.filter(opt => !opt.members.includes(currentVoter));
+        }
+
+        const optionsContainer = document.createElement("div");
+        optionsContainer.className = "space-y-2 pt-1";
+
+        availableChoices.forEach((choice, optIdx) => {
+          const checkId = `check-${q.id}-${optIdx}`;
+          const choiceDiv = document.createElement("div");
+          choiceDiv.innerHTML = `
+            <input type="checkbox" id="${checkId}" name="${q.id}" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit('${q.id}', ${maxAllowed}, event)">
+            <label for="${checkId}" class="flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition">
+              <span>${choice.label}</span>
+              <i class="fa-solid fa-check text-xs opacity-0 check-icon transition-opacity"></i>
+            </label>
+          `;
+          optionsContainer.appendChild(choiceDiv);
+        });
+
+        qCard.appendChild(optionsContainer);
+        container.appendChild(qCard);
+      });
     }
 
     function handleCheckboxLimit(questionId, maxAllowed, event) {
       const checkedBoxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
       if (checkedBoxes.length > maxAllowed) {
-        showToast(`You can only select up to ${maxAllowed} choice(s) in this round!`, "warning");
+        alert(`You can only select a maximum of ${maxAllowed} option(s) for this question!`);
         event.target.checked = false;
       }
     }
 
-    function handleSubmitCurrentRound() {
-      const roundConfig = ROUNDS[currentRoundIndex - 1];
-      const checkedBoxes = document.querySelectorAll(`input[name="${roundConfig.id}"]:checked`);
+    async function handleSubmitVote() {
+      const answers = {};
+      let isComplete = true;
 
-      if (checkedBoxes.length !== roundConfig.maxChoices) {
-        showToast(`Please select exactly ${roundConfig.maxChoices} choice(s) before submitting!`, "error");
-        return;
-      }
+      QUESTIONS.forEach((q, index) => {
+        const targetLimit = (index < 2) ? 2 : 1;
+        const checked = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`)).map(cb => cb.value);
 
-      // Record voter's choices for this round
-      playerVotes[roundConfig.id] = Array.from(checkedBoxes).map(cb => cb.value);
-
-      showToast(`Round ${currentRoundIndex} vote submitted successfully!`, "success");
-
-      setTimeout(() => {
-        if (currentRoundIndex < 3) {
-          // Move to Intermission screen waiting for next performance round
-          simulateRoundFlow(currentRoundIndex, 'intermission');
+        if (checked.length !== targetLimit) {
+          isComplete = false;
+          alert(`Please select EXACTLY ${targetLimit} option(s) for Question ${index + 1}!`);
         } else {
-          // Finished all 3 rounds! Show contestant restricted screen
-          hideAllScreens();
-          document.getElementById("step-results").classList.remove("hidden");
-          document.getElementById("results-restricted-view").classList.remove("hidden");
-          document.getElementById("results-host-view").classList.add("hidden");
+          answers[q.id] = checked;
         }
-      }, 600);
-    }
-
-    function advanceToNextRoundByPlayer() {
-      if (currentRoundIndex < 3) {
-        simulateRoundFlow(currentRoundIndex + 1, 'vote');
-        showToast(`Opening Round ${currentRoundIndex} Ballot!`, "info");
-      } else {
-        simulateRoundFlow(4, 'host_results');
-      }
-    }
-
-    function renderHostResultCategory(cat) {
-      ['all', 'q1', 'q2', 'q3'].forEach(tab => {
-        const el = document.getElementById(`tab-res-${tab}`);
-        if (!el) return;
-        el.className = tab === cat
-          ? "flex-1 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition"
-          : "flex-1 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:bg-white/10 transition";
       });
 
+      if (!isComplete) return;
+
+      const btn = document.getElementById("btn-submit");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting...`;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ voter: currentVoter, answers: answers })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          syncVotedUsers();
+        } else {
+          alert(data.message || "Failed to submit vote!");
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> Submit Ballot`;
+        }
+      } catch (e) {
+        alert("Network error. Please try again.");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Submit Ballot`;
+      }
+    }
+
+    async function fetchAndShowResults() {
+      showScreen("step-status");
+      document.getElementById("status-waiting").classList.add("hidden");
+
+      try {
+        const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}`);
+        const data = await res.json();
+
+        if (data.status === "UNLOCKED") {
+          document.getElementById("status-results").classList.remove("hidden");
+          document.getElementById("status-restricted").classList.add("hidden");
+          renderResults(data.results);
+          triggerConfetti();
+        } else if (data.status === "RESTRICTED") {
+          document.getElementById("status-results").classList.add("hidden");
+          document.getElementById("status-restricted").classList.remove("hidden");
+        }
+      } catch (err) {
+        console.error("Error fetching results:", err);
+      }
+    }
+
+    function renderResults(tallyData) {
       const container = document.getElementById("results-display-container");
       container.innerHTML = "";
 
-      const roundsToDisplay = cat === 'all' 
-        ? ROUNDS 
-        : ROUNDS.filter(r => r.id === cat);
-
-      roundsToDisplay.forEach((q, idx) => {
-        const qResults = MOCK_RESULTS[q.id] || {};
+      QUESTIONS.forEach((q, idx) => {
+        const qResults = tallyData[q.id] || {};
 
         const sorted = Object.keys(qResults).map(key => ({
           label: key,
@@ -628,22 +457,13 @@
         })).sort((a, b) => b.votes - a.votes);
 
         const highestVotes = sorted.length > 0 ? sorted[0].votes : 0;
-        const totalVotesForQ = sorted.reduce((sum, item) => sum + item.votes, 0) || 1;
 
         const sectionCard = document.createElement("div");
         sectionCard.className = "bg-white/5 p-4 rounded-xl border border-white/10 space-y-3";
         sectionCard.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-amber-400/20 text-amber-300 font-bold text-xs flex items-center justify-center">
-                ${q.roundNumber}
-              </span>
-              <div>
-                <h3 class="text-xs font-bold text-white">${q.title}</h3>
-                <span class="text-[10px] text-fuchsia-300 font-medium">${q.stageName}</span>
-              </div>
-            </div>
-            <span class="text-[10px] text-slate-400 font-mono">${totalVotesForQ} votes</span>
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-amber-400/20 text-amber-300 font-bold text-xs flex items-center justify-center">${idx + 1}</span>
+            <h3 class="text-sm font-bold text-white">${q.title}</h3>
           </div>
         `;
 
@@ -652,7 +472,6 @@
 
         sorted.forEach((res, rank) => {
           const isWinner = res.votes === highestVotes && res.votes > 0;
-          const votePercent = Math.round((res.votes / totalVotesForQ) * 100);
 
           const item = document.createElement("div");
           item.className = `p-3 rounded-lg border transition ${
@@ -667,10 +486,7 @@
                 ${isWinner ? '<i class="fa-solid fa-crown text-amber-400 text-xs"></i>' : `<span class="text-slate-500 font-mono">#${rank + 1}</span>`}
                 <span class="font-semibold ${isWinner ? 'text-amber-200' : 'text-slate-200'}">${res.label}</span>
               </div>
-              <span class="font-bold ${isWinner ? 'text-amber-400' : 'text-slate-400'}">${res.votes} votes (${votePercent}%)</span>
-            </div>
-            <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-              <div class="h-full rounded-full ${isWinner ? 'bg-gradient-to-r from-amber-400 to-yellow-500' : 'bg-slate-600'}" style="width: ${votePercent}%"></div>
+              <span class="font-bold ${isWinner ? 'text-amber-400' : 'text-slate-400'}">${res.votes} votes</span>
             </div>
           `;
           listContainer.appendChild(item);
@@ -681,52 +497,42 @@
       });
     }
 
-    function hideAllScreens() {
+    async function confirmResetGame() {
+      if (!confirm("Are you sure you want to RESET the game for everyone?")) return;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "resetGame" })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.removeItem("party_current_voter");
+          currentVoter = null;
+          alert("Game has been reset successfully!");
+          location.reload();
+        }
+      } catch (err) {
+        alert("Reset failed.");
+      }
+    }
+
+    function updateHeaderProgress(count) {
+      document.getElementById("header-vote-progress").textContent = `${count} / ${TOTAL_PLAYERS} voted`;
+    }
+
+    function updateWaitingProgress(count) {
+      const percentage = Math.round((count / TOTAL_PLAYERS) * 100);
+      document.getElementById("waiting-count-text").textContent = `${count} / ${TOTAL_PLAYERS}`;
+      document.getElementById("waiting-progress-bar").style.width = `${percentage}%`;
+    }
+
+    function showScreen(screenId) {
       document.getElementById("step-identity").classList.add("hidden");
       document.getElementById("step-vote").classList.add("hidden");
-      document.getElementById("step-intermission").classList.add("hidden");
-      document.getElementById("step-results").classList.add("hidden");
-    }
-
-    function openResetModal() {
-      document.getElementById("reset-confirm-modal").classList.remove("hidden");
-    }
-
-    function closeResetModal() {
-      document.getElementById("reset-confirm-modal").classList.add("hidden");
-    }
-
-    function executeResetSession() {
-      closeResetModal();
-      playerVotes = { q1: [], q2: [], q3: [] };
-      showToast("Contest reset! Beginning Round 1 (Solo)...", "info");
-      setTimeout(() => simulateRoundFlow(1, 'vote'), 500);
-    }
-
-    function showToast(message, type = "info") {
-      const toast = document.getElementById("app-toast");
-      const text = document.getElementById("toast-message");
-      const icon = document.getElementById("toast-icon");
-
-      text.textContent = message;
-
-      if (type === "warning") {
-        icon.className = "fa-solid fa-triangle-exclamation text-amber-400 text-sm";
-      } else if (type === "error") {
-        icon.className = "fa-solid fa-circle-xmark text-rose-400 text-sm";
-      } else if (type === "success") {
-        icon.className = "fa-solid fa-circle-check text-emerald-400 text-sm";
-      } else {
-        icon.className = "fa-solid fa-circle-info text-fuchsia-400 text-sm";
-      }
-
-      toast.classList.remove("-translate-y-20", "opacity-0");
-      toast.classList.add("translate-y-0", "opacity-100");
-
-      setTimeout(() => {
-        toast.classList.add("-translate-y-20", "opacity-0");
-        toast.classList.remove("translate-y-0", "opacity-100");
-      }, 2500);
+      document.getElementById("step-status").classList.add("hidden");
+      document.getElementById(screenId).classList.remove("hidden");
     }
 
     function toggleQRModal() {
@@ -737,22 +543,13 @@
       const url = window.location.href;
       document.getElementById("current-url-text").textContent = url;
       new QRCode(document.getElementById("qrcode-container"), {
-        text: url, 
-        width: 150, 
-        height: 150, 
-        colorDark : "#0f0c1d", 
-        colorLight : "#ffffff", 
-        correctLevel : QRCode.CorrectLevel.H
+        text: url, width: 160, height: 160, colorDark : "#0f0c1d", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
       });
     }
 
     function triggerConfetti() {
       if (typeof confetti === 'function') {
-        confetti({ 
-          particleCount: 90, 
-          spread: 85, 
-          origin: { y: 0.55 } 
-        });
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
       }
     }
   </script>
