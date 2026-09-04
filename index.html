@@ -18,7 +18,6 @@
     .glass-card {
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.15);
     }
     .glass-input {
@@ -146,3 +145,463 @@
             <i class="fa-solid fa-lock-open"></i>
           </button>
         </div>
+      </div>
+
+      <div id="status-restricted" class="hidden text-center py-6 space-y-4">
+        <div class="inline-flex p-4 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/30 text-fuchsia-400 text-3xl">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h2 class="text-2xl font-black text-white">Voting Complete!</h2>
+        <p class="text-sm text-slate-300 max-w-xs mx-auto">All votes have been tallied. The final results are strictly revealed to the <strong class="text-amber-300">Host</strong>!</p>
+        
+        <div class="pt-4 border-t border-white/10">
+          <button onclick="resetCurrentSession()" class="w-full py-3.5 bg-fuchsia-600/30 hover:bg-fuchsia-600/50 border border-fuchsia-500/40 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-2 shadow-lg">
+            <i class="fa-solid fa-user-plus text-fuchsia-300"></i>
+            <span>Submit another response</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="status-results" class="hidden space-y-4">
+        <div class="text-center mb-4">
+          <div class="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/30 mb-2 text-amber-400 text-3xl">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+          <h2 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-orange-300">Host Live Dashboard</h2>
+          <p class="text-xs text-slate-400 mt-1">Real-time leaderboard across all rounds</p>
+        </div>
+
+        <div id="results-display-container" class="space-y-6"></div>
+
+        <div id="host-next-from-results" class="pt-2 hidden">
+          <button onclick="hostUnlockNextRound()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-xs font-bold text-slate-900 shadow-lg transition flex items-center justify-center gap-2">
+            <span>Proceed to Next Round</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <div class="pt-4 border-t border-white/10">
+          <button onclick="resetCurrentSession()" class="w-full py-3.5 bg-fuchsia-600/30 hover:bg-fuchsia-600/50 border border-fuchsia-500/40 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-2 shadow-lg">
+            <i class="fa-solid fa-user-plus text-fuchsia-300"></i>
+            <span>Submit another response</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <div id="qr-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-2xl p-6 max-w-xs w-full text-center relative border border-white/20 shadow-2xl">
+      <button onclick="toggleQRModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3 class="text-lg font-bold text-white mb-1">Scan to Join Vote</h3>
+      <p class="text-xs text-slate-300 mb-4">On VN Sustainability Team Contest</p>
+
+      <div class="p-3 bg-white rounded-xl inline-block shadow-inner mb-3">
+        <div id="qrcode-container"></div>
+      </div>
+
+      <p class="text-[11px] text-slate-400 break-all px-2" id="current-url-text"></p>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzXLzCATb-D9tO_LH-8bJV4o1OS1RTk7CGxjX1wE-nqVXi7YJVZ2aWiqqLQadEteiHKlA/exec";
+    const TOTAL_PLAYERS = 9;
+    const ADMIN_USER = "Trinh";
+    const PLAYERS = ["Denny", "Trixie", "Jasmine", "Stephen", "Bella", "Dien", "Trinh", "Doan", "Hebe"];
+
+    let QUESTIONS = [];
+    let currentVoter = localStorage.getItem("party_voter") || null;
+    let submittedRounds = {};
+    let activeRoundOnServer = 0;
+    let renderedRoundIndex = -1;
+
+    window.onload = function() {
+      initQR();
+      loadQuestionsAndSync();
+      setInterval(syncVoterState, 1200);
+    };
+
+    async function loadQuestionsAndSync() {
+      try {
+        const res = await fetch(API_URL + "?action=getQuestions");
+        const data = await res.json();
+        QUESTIONS = data.questions || [];
+        activeRoundOnServer = parseInt(data.activeRound || 0, 10);
+        parseQuestionOptions();
+        
+        if (currentVoter) {
+          await syncVoterState();
+        } else {
+          showScreen("step-identity");
+          populateIdentityDropdown();
+        }
+      } catch (err) {
+        console.error("Error loading questions:", err);
+      }
+    }
+
+    function parseQuestionOptions() {
+      QUESTIONS.forEach(q => {
+        q.parsedOptions = [];
+        if (q.type === 'custom' && q.rawOptions) {
+          const parts = q.rawOptions.split('|');
+          parts.forEach(part => {
+            part = part.trim();
+            const match = part.match(/^(.*?)\s*\[(.*?)\]$/);
+            if (match) {
+              const label = match[1].trim();
+              const members = match[2].split(',').map(m => m.trim());
+              q.parsedOptions.push({ label, members });
+            } else if (part) {
+              q.parsedOptions.push({ label: part, members: [] });
+            }
+          });
+        }
+      });
+    }
+
+    async function syncVoterState() {
+      if (!currentVoter) return;
+
+      try {
+        const res = await fetch(`${API_URL}?action=getVoterState&voter=${encodeURIComponent(currentVoter)}`);
+        const data = await res.json();
+        submittedRounds = data.submittedRounds || {};
+        activeRoundOnServer = parseInt(data.activeRound || 0, 10);
+
+        if (currentVoter === ADMIN_USER) {
+          document.getElementById("admin-reset-btn").classList.remove("hidden");
+          document.getElementById("host-round-control").classList.remove("hidden");
+          fetchHostResults();
+        } else {
+          document.getElementById("admin-reset-btn").classList.add("hidden");
+          document.getElementById("host-round-control").classList.add("hidden");
+        }
+
+        const currentQ = QUESTIONS[activeRoundOnServer];
+        if (!currentQ) return;
+
+        if (submittedRounds[currentQ.id]) {
+          renderedRoundIndex = -1;
+          if (currentVoter === ADMIN_USER) {
+            showScreen("step-status");
+            hideAllStatusViews();
+            document.getElementById("status-results").classList.remove("hidden");
+          } else {
+            showScreen("step-status");
+            hideAllStatusViews();
+            document.getElementById("status-intermission").classList.remove("hidden");
+            document.getElementById("intermission-title").textContent = `Round ${activeRoundOnServer + 1} Submitted!`;
+          }
+        } else {
+          showScreen("step-vote");
+          if (renderedRoundIndex !== activeRoundOnServer) {
+            renderCurrentRoundQuestion();
+          }
+        }
+
+      } catch (err) {
+        console.error("Sync voter state error:", err);
+      }
+    }
+
+    function populateIdentityDropdown() {
+      const select = document.getElementById("user-select");
+      select.innerHTML = '<option value="">-- Choose your name --</option>';
+
+      PLAYERS.forEach(player => {
+        const option = document.createElement("option");
+        option.value = player;
+        option.textContent = player;
+        select.appendChild(option);
+      });
+    }
+
+    function handleStartVote() {
+      const select = document.getElementById("user-select");
+      const selectedName = select.value;
+
+      if (!selectedName) {
+        select.classList.add("ring-2", "ring-rose-500");
+        setTimeout(() => select.classList.remove("ring-2", "ring-rose-500"), 1000);
+        return;
+      }
+
+      currentVoter = selectedName;
+      localStorage.setItem("party_voter", currentVoter);
+      syncVoterState();
+    }
+
+    function renderCurrentRoundQuestion() {
+      renderedRoundIndex = activeRoundOnServer;
+      document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
+      updateStepperUI();
+
+      const q = QUESTIONS[activeRoundOnServer];
+      const maxAllowed = (activeRoundOnServer < 2) ? 2 : 1;
+
+      document.getElementById("round-badge-title").textContent = `Round ${activeRoundOnServer + 1} of ${QUESTIONS.length}`;
+      
+      const submitBtn = document.getElementById("btn-submit-round");
+      submitBtn.disabled = false;
+      document.getElementById("btn-submit-text").textContent = `Submit Round ${activeRoundOnServer + 1} Vote`;
+
+      const container = document.getElementById("single-question-card");
+      container.innerHTML = `
+        <div class="flex items-start gap-2.5 mb-2">
+          <div class="mt-0.5 p-2 rounded-lg bg-fuchsia-500/20 text-fuchsia-400 text-xs">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">${activeRoundOnServer + 1}. ${q.title}</h3>
+            <p class="text-[11px] text-fuchsia-300 italic">
+              ${maxAllowed === 2 ? 'Select EXACTLY 2 options below:' : 'Select EXACTLY 1 option below:'}
+            </p>
+          </div>
+        </div>
+      `;
+
+      let availableChoices = [];
+      if (q.type === "solo") {
+        availableChoices = PLAYERS.filter(name => name !== currentVoter).map(name => ({ label: name }));
+      } else if (q.type === "custom") {
+        availableChoices = q.parsedOptions.filter(opt => !opt.members.includes(currentVoter));
+      }
+
+      const optionsContainer = document.createElement("div");
+      optionsContainer.className = "space-y-2 pt-2";
+
+      availableChoices.forEach((choice, optIdx) => {
+        const checkId = `check-${q.id}-${optIdx}`;
+        const choiceDiv = document.createElement("div");
+        choiceDiv.innerHTML = `
+          <input type="checkbox" id="${checkId}" name="${q.id}" value="${choice.label}" class="custom-checkbox hidden" onchange="handleCheckboxLimit('${q.id}', ${maxAllowed}, event)">
+          <label for="${checkId}" class="flex items-center justify-between p-3 rounded-lg border border-white/10 glass-input text-xs font-medium cursor-pointer transition">
+            <span>${choice.label}</span>
+            <i class="fa-solid fa-check text-xs opacity-0 check-icon transition-opacity"></i>
+          </label>
+        `;
+        optionsContainer.appendChild(choiceDiv);
+      });
+
+      container.appendChild(optionsContainer);
+    }
+
+    function handleCheckboxLimit(questionId, maxAllowed, event) {
+      const checkedBoxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+      if (checkedBoxes.length > maxAllowed) {
+        alert(`You can only select a maximum of ${maxAllowed} option(s) for this question!`);
+        event.target.checked = false;
+      }
+    }
+
+    async function handleSubmitRound() {
+      const q = QUESTIONS[activeRoundOnServer];
+      const targetLimit = (activeRoundOnServer < 2) ? 2 : 1;
+      const checked = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`)).map(cb => cb.value);
+
+      if (checked.length !== targetLimit) {
+        alert(`Please select EXACTLY ${targetLimit} option(s) for Round ${activeRoundOnServer + 1}!`);
+        return;
+      }
+
+      const btn = document.getElementById("btn-submit-round");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Submitting...`;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            voter: currentVoter,
+            qId: q.id,
+            answer: checked,
+            roundIndex: activeRoundOnServer
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          await syncVoterState();
+        } else {
+          alert("Submission failed!");
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert("Network error.");
+        btn.disabled = false;
+      }
+    }
+
+    async function hostUnlockNextRound() {
+      const nextR = activeRoundOnServer + 1;
+      if (nextR >= QUESTIONS.length) {
+        alert("This is already the final round!");
+        return;
+      }
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "setRound", voter: currentVoter, round: nextR })
+        });
+        const data = await res.json();
+        if (data.success) {
+          activeRoundOnServer = nextR;
+          await syncVoterState();
+        }
+      } catch (e) {
+        alert("Failed to unlock next round.");
+      }
+    }
+
+    async function fetchHostResults() {
+      try {
+        const res = await fetch(`${API_URL}?action=getResults&voter=${encodeURIComponent(currentVoter)}`);
+        const data = await res.json();
+
+        if (data.status === "UNLOCKED") {
+          renderResults(data.results);
+          if (activeRoundOnServer < QUESTIONS.length - 1) {
+            document.getElementById("host-next-from-results").classList.remove("hidden");
+          } else {
+            document.getElementById("host-next-from-results").classList.add("hidden");
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching results:", err);
+      }
+    }
+
+    function renderResults(tallyData) {
+      const container = document.getElementById("results-display-container");
+      container.innerHTML = "";
+
+      QUESTIONS.slice(0, activeRoundOnServer + 1).forEach((q, idx) => {
+        const qResults = tallyData[q.id] || {};
+
+        const sorted = Object.keys(qResults).map(key => ({
+          label: key,
+          votes: qResults[key]
+        })).sort((a, b) => b.votes - a.votes);
+
+        const highestVotes = sorted.length > 0 ? sorted[0].votes : 0;
+
+        const sectionCard = document.createElement("div");
+        sectionCard.className = "bg-white/5 p-4 rounded-xl border border-white/10 space-y-3";
+        sectionCard.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-amber-400/20 text-amber-300 font-bold text-xs flex items-center justify-center">${idx + 1}</span>
+            <h3 class="text-sm font-bold text-white">${q.title}</h3>
+          </div>
+        `;
+
+        const listContainer = document.createElement("div");
+        listContainer.className = "space-y-2.5 pt-1";
+
+        sorted.forEach((res, rank) => {
+          const isWinner = res.votes === highestVotes && res.votes > 0;
+
+          const item = document.createElement("div");
+          item.className = `p-3 rounded-lg border transition ${
+            isWinner 
+              ? 'bg-amber-500/10 border-amber-500/40 ring-1 ring-amber-400/30' 
+              : 'bg-white/5 border-white/5'
+          }`;
+
+          item.innerHTML = `
+            <div class="flex justify-between items-center text-xs mb-1.5">
+              <div class="flex items-center gap-1.5">
+                ${isWinner ? '<i class="fa-solid fa-crown text-amber-400 text-xs"></i>' : `<span class="text-slate-500 font-mono">#${rank + 1}</span>`}
+                <span class="font-semibold ${isWinner ? 'text-amber-200' : 'text-slate-200'}">${res.label}</span>
+              </div>
+              <span class="font-bold ${isWinner ? 'text-amber-400' : 'text-slate-400'}">${res.votes} votes</span>
+            </div>
+          `;
+          listContainer.appendChild(item);
+        });
+
+        sectionCard.appendChild(listContainer);
+        container.appendChild(sectionCard);
+      });
+    }
+
+    async function confirmResetGame() {
+      if (!confirm("⚠️ Host Trinh ơi, bạn có chắc chắn muốn RESET TOÀN BỘ GAME không?")) return;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "resetGame" })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("✅ Đã reset toàn bộ game thành công!");
+          resetCurrentSession();
+        }
+      } catch (err) {
+        alert("Lỗi kết nối khi Reset.");
+      }
+    }
+
+    function resetCurrentSession() {
+      currentVoter = null;
+      renderedRoundIndex = -1;
+      localStorage.removeItem("party_voter");
+      showScreen("step-identity");
+      populateIdentityDropdown();
+    }
+
+    function updateStepperUI() {
+      for (let i = 0; i < 3; i++) {
+        const tab = document.getElementById(`step-tab-${i}`);
+        if (tab) {
+          if (i === activeRoundOnServer) {
+            tab.className = "text-fuchsia-400 flex items-center gap-1 font-bold";
+          } else if (i < activeRoundOnServer) {
+            tab.className = "text-emerald-400 flex items-center gap-1 font-semibold";
+            tab.querySelector("span").textContent = "✓";
+          } else {
+            tab.className = "text-slate-500 flex items-center gap-1 opacity-60";
+          }
+        }
+      }
+    }
+
+    function hideAllStatusViews() {
+      document.getElementById("status-intermission").classList.add("hidden");
+      document.getElementById("status-restricted").classList.add("hidden");
+      document.getElementById("status-results").classList.add("hidden");
+    }
+
+    function showScreen(screenId) {
+      document.getElementById("step-identity").classList.add("hidden");
+      document.getElementById("step-vote").classList.add("hidden");
+      document.getElementById("step-status").classList.add("hidden");
+      document.getElementById(screenId).classList.remove("hidden");
+    }
+
+    function toggleQRModal() {
+      document.getElementById("qr-modal").classList.toggle("hidden");
+    }
+
+    function initQR() {
+      const currentUrl = window.location.href.split('?')[0];
+      document.getElementById("current-url-text").textContent = currentUrl;
+      
+      const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentUrl)}`;
+      document.getElementById("qrcode-container").innerHTML = `<img src="${qrImgUrl}" alt="QR Code" class="mx-auto rounded-lg shadow-md" />`;
+    }
+  </script>
+</body>
+</html>
