@@ -4,13 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>On VN Sustainability Team Singing Contest</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -33,21 +29,20 @@
     }
     select option { background-color: #1a1528; color: #ffffff; }
 
-    /* Custom Option Card Selected State */
-    .option-card.selected {
+    /* Custom Option Card Active State */
+    .vote-option-card.active {
       background: rgba(217, 70, 239, 0.25) !important;
       border-color: #d946ef !important;
       color: #ffffff !important;
       box-shadow: 0 0 12px rgba(217, 70, 239, 0.35);
     }
-    .option-card.selected .check-icon {
+    .vote-option-card.active .check-icon {
       opacity: 1 !important;
     }
   </style>
 </head>
 <body class="p-4 flex flex-col items-center justify-center min-h-screen">
 
-  <!-- HEADER -->
   <header class="w-full max-w-md flex justify-between items-center mb-4 px-1">
     <div class="flex items-center space-x-2">
       <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-fuchsia-600 to-amber-400 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
@@ -62,7 +57,6 @@
         <span>Share QR</span>
       </button>
 
-      <!-- RESET BUTTON (HOST TRINH ONLY) -->
       <button id="admin-reset-btn" onclick="confirmResetGame()" title="Reset Game" class="px-3 py-1.5 rounded-full bg-red-500/20 hover:bg-red-500/40 border border-red-500/40 text-xs font-bold text-red-300 transition flex items-center gap-1.5 shadow-lg hidden">
         <i class="fa-solid fa-rotate-right"></i>
         <span>Reset</span>
@@ -70,10 +64,8 @@
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
   <main class="w-full max-w-md">
 
-    <!-- STEP 1: IDENTITY -->
     <section id="step-identity" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden transition-all duration-300">
       <div class="text-center mb-6">
         <div class="inline-flex p-3 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/20 mb-3 text-fuchsia-400 text-2xl">
@@ -101,7 +93,6 @@
       </div>
     </section>
 
-    <!-- STEP 2: ROUND VOTING -->
     <section id="step-vote" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
       <div id="round-stepper" class="flex items-center justify-between mb-5 px-2 text-xs font-bold border-b border-white/10 pb-3">
         <div id="step-tab-0" class="text-fuchsia-400 flex items-center gap-1">
@@ -137,10 +128,8 @@
       </div>
     </section>
 
-    <!-- STEP 3: INTERMISSION / RESULTS -->
     <section id="step-status" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden hidden transition-all duration-300">
       
-      <!-- INTERMISSION SCREEN FOR PLAYERS -->
       <div id="status-intermission" class="hidden text-center py-4 space-y-4">
         <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto text-2xl">
           <i class="fa-solid fa-check"></i>
@@ -148,7 +137,6 @@
         <h2 id="intermission-title" class="text-xl font-black text-white">Round Submitted!</h2>
         <p class="text-xs text-slate-300 max-w-xs mx-auto">Your vote for this round has been recorded. Please wait for the Host to open the next round.</p>
         
-        <!-- HOST CONTROL PANEL -->
         <div id="host-round-control" class="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30 mt-4 space-y-3 hidden">
           <p class="text-xs text-amber-300 font-semibold"><i class="fa-solid fa-crown mr-1"></i> Host Control Panel</p>
           <button id="btn-host-next" onclick="hostUnlockNextRound()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-xs font-bold text-slate-900 shadow-lg transition flex items-center justify-center gap-2">
@@ -158,23 +146,14 @@
         </div>
       </div>
 
-      <!-- RESTRICTED RESULTS FOR PLAYER -->
       <div id="status-restricted" class="hidden text-center py-6 space-y-4">
         <div class="inline-flex p-4 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/30 text-fuchsia-400 text-3xl">
           <i class="fa-solid fa-lock"></i>
         </div>
         <h2 class="text-2xl font-black text-white">Voting Complete!</h2>
         <p class="text-sm text-slate-300 max-w-xs mx-auto">All votes have been tallied. The final results are strictly revealed to the <strong class="text-amber-300">Host</strong>!</p>
-        
-        <div class="pt-4 border-t border-white/10">
-          <button onclick="resetCurrentSession()" class="w-full py-3.5 bg-fuchsia-600/30 hover:bg-fuchsia-600/50 border border-fuchsia-500/40 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-2 shadow-lg">
-            <i class="fa-solid fa-user-plus text-fuchsia-300"></i>
-            <span>Submit another response</span>
-          </button>
-        </div>
       </div>
 
-      <!-- LIVE RESULTS FOR HOST -->
       <div id="status-results" class="hidden space-y-4">
         <div class="text-center mb-4">
           <div class="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/30 mb-2 text-amber-400 text-3xl">
@@ -192,20 +171,12 @@
             <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
-
-        <div class="pt-4 border-t border-white/10">
-          <button onclick="resetCurrentSession()" class="w-full py-3.5 bg-fuchsia-600/30 hover:bg-fuchsia-600/50 border border-fuchsia-500/40 rounded-xl text-xs font-bold text-white transition flex items-center justify-center gap-2 shadow-lg">
-            <i class="fa-solid fa-user-plus text-fuchsia-300"></i>
-            <span>Submit another response</span>
-          </button>
-        </div>
       </div>
 
     </section>
 
   </main>
 
-  <!-- QR MODAL -->
   <div id="qr-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-card rounded-2xl p-6 max-w-xs w-full text-center relative border border-white/20 shadow-2xl">
       <button onclick="toggleQRModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
@@ -309,8 +280,14 @@
           } else {
             showScreen("step-status");
             hideAllStatusViews();
-            document.getElementById("status-intermission").classList.remove("hidden");
-            document.getElementById("intermission-title").textContent = `Round ${activeRoundOnServer + 1} Submitted!`;
+            
+            // Nếu đã qua vòng 3 -> Hiện màn hình kết thúc hoàn tất
+            if (activeRoundOnServer >= QUESTIONS.length - 1 && submittedRounds[QUESTIONS[QUESTIONS.length - 1].id]) {
+              document.getElementById("status-restricted").classList.remove("hidden");
+            } else {
+              document.getElementById("status-intermission").classList.remove("hidden");
+              document.getElementById("intermission-title").textContent = `Round ${activeRoundOnServer + 1} Submitted!`;
+            }
           }
         } else {
           showScreen("step-vote");
@@ -390,14 +367,13 @@
 
       availableChoices.forEach((choice) => {
         const optionCard = document.createElement("div");
-        optionCard.className = "option-card flex items-center justify-between p-3.5 rounded-xl border border-white/10 glass-input text-xs font-medium cursor-pointer transition select-none hover:border-fuchsia-400/50";
+        optionCard.className = "vote-option-card flex items-center justify-between p-3.5 rounded-xl border border-white/10 glass-input text-xs font-medium cursor-pointer transition select-none hover:border-fuchsia-400/50";
 
         optionCard.innerHTML = `
           <span>${choice.label}</span>
           <i class="fa-solid fa-check text-xs opacity-0 check-icon text-fuchsia-400 transition-opacity"></i>
         `;
 
-        // Lắng nghe sự kiện click trực tiếp
         optionCard.onclick = function() {
           toggleOptionSelection(optionCard, choice.label, maxAllowed);
         };
@@ -413,14 +389,14 @@
 
       if (index > -1) {
         selectedOptions.splice(index, 1);
-        element.classList.remove("selected");
+        element.classList.remove("active");
       } else {
         if (selectedOptions.length >= maxAllowed) {
           alert(`You can only select a maximum of ${maxAllowed} option(s) for this question!`);
           return;
         }
         selectedOptions.push(val);
-        element.classList.add("selected");
+        element.classList.add("active");
       }
     }
 
@@ -573,22 +549,16 @@
         const data = await res.json();
         if (data.success) {
           alert("✅ Đã reset toàn bộ game thành công!");
-          resetCurrentSession();
+          currentVoter = null;
+          localStorage.removeItem("party_voter");
+          showScreen("step-identity");
+          populateIdentityDropdown();
         } else {
           alert("Lỗi: Không thể reset game.");
         }
       } catch (err) {
         alert("Lỗi kết nối khi Reset.");
       }
-    }
-
-    // XÓA SẠCH BỘ NHỚ LƯU TÊN CŨ KHI BẤM "SUBMIT ANOTHER RESPONSE"
-    function resetCurrentSession() {
-      currentVoter = null;
-      localStorage.removeItem("party_voter");
-      localStorage.clear();
-      showScreen("step-identity");
-      populateIdentityDropdown();
     }
 
     function updateStepperUI() {
