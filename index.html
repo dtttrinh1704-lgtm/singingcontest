@@ -222,6 +222,9 @@
     let submittedRounds = {};
     let activeRoundOnServer = -1;
     let initialRoundCheck = -1;
+    
+    // ĐẶT CỜ CHỐNG NHẢ CHECKBOX
+    let isUserSelecting = false; 
 
     window.onload = function() {
       initQR();
@@ -281,6 +284,9 @@
     }
 
     async function syncVoterState() {
+      // NẾU NGƯỜI CHƠI ĐANG TRONG MÀN HÌNH CHỌN CÂU TRẢ LỜI KHÔNG ĐƯỢC CHẠY QUÉT NGẦM
+      if (isUserSelecting) return;
+
       try {
         const fetchUrl = currentVoter 
           ? `${API_URL}?action=getVoterState&voter=${encodeURIComponent(currentVoter)}&_t=${Date.now()}`
@@ -291,7 +297,7 @@
         
         const newServerRound = parseInt(data.activeRound || 0, 10);
 
-        // NẾU PHÁT HIỆN HOST CHUYỂN VÒNG THI -> NẠP LẠI (RELOAD) TRANG WEB TỰ ĐỘNG!
+        // Phát hiện Host chuyển vòng -> Tự động nạp lại trang
         if (initialRoundCheck !== -1 && newServerRound !== initialRoundCheck) {
           window.location.reload();
           return;
@@ -350,6 +356,9 @@
     }
 
     function renderCurrentRoundQuestion() {
+      // BẬT CỜ BẢO VỆ KHI FORM BÌNH CHỌN MỞ RA
+      isUserSelecting = true;
+
       document.getElementById("vote-greeting").textContent = `Hello, ${currentVoter}!`;
       updateStepperUI();
 
@@ -439,6 +448,8 @@
 
         const data = await res.json();
         if (data.success) {
+          // NỘP XONG MỚI MỞ LẠI QUÉT NGẦM
+          isUserSelecting = false; 
           await syncVoterState();
         } else {
           alert("Submission failed!");
@@ -567,6 +578,7 @@
 
     function resetCurrentSession() {
       currentVoter = null;
+      isUserSelecting = false;
       window.location.reload();
     }
 
